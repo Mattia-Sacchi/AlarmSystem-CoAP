@@ -1,14 +1,19 @@
 package com.service;
 
+import io.dropwizard.Application;
+import io.dropwizard.setup.Environment;
+
+import com.resources.DeviceResource;
+
 import com.Descriptors.DeviceDescriptor;
-import io.dropwizard.core.Application;
-import io.dropwizard.core.setup.Environment;
+
 
 public class AppService extends Application<AppConfig>{
 
     @Override
     public void run(AppConfig arg0, Environment arg1) throws Exception {
         addDemoDevice(arg0);
+        arg1.jersey().register(new DeviceResource(arg0));
     }
 
     public void addDemoDevice(AppConfig config)
