@@ -1,6 +1,6 @@
-package service;
+package com.service;
 
-import Managers.DeviceManager;
+import com.Managers.DeviceManager;
 import io.dropwizard.core.Configuration;
 
 public class AppConfig extends Configuration {

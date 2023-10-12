@@ -1,4 +1,4 @@
-package Descriptors;
+package com.Descriptors;
 
 public class DeviceDescriptor {
     private String id;

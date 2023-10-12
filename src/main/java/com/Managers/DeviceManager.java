@@ -1,9 +1,9 @@
-package Managers;
+package com.Managers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import Descriptors.DeviceDescriptor;
+import com.Descriptors.DeviceDescriptor;
 
 public class DeviceManager {
     

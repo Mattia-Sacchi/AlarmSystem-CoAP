@@ -1,5 +1,5 @@
 package com.example;
-import Descriptors.DeviceDescriptor;
+import com.Descriptors.DeviceDescriptor;
 
 
 public class Main {

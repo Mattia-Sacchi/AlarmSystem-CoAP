@@ -1,6 +1,6 @@
-package service;
+package com.service;
 
-import Descriptors.DeviceDescriptor;
+import com.Descriptors.DeviceDescriptor;
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Environment;
 
