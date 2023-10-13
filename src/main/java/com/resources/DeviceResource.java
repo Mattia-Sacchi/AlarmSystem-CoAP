@@ -1,5 +1,7 @@
 package com.resources;
 import org.glassfish.jersey.message.internal.MediaTypes;
+
+import java.net.URI;
 import java.util.List;
 import com.service.AppConfig;
 import com.Descriptors.DeviceDescriptor;
@@ -44,12 +46,12 @@ public class DeviceResource {
                 m_config.getDeviceManager().getDeviceList();
 
             if(deviceList.isEmpty())
-                m_config.genericNotFoundError();
+                return m_config.genericError(Response.Status.NOT_FOUND,"Device not Found");
 
             return Response.ok(deviceList).build();
         } catch (Exception e) {
             e.printStackTrace();
-            return m_config.genericInternalError();
+            return m_config.genericError(Response.Status.INTERNAL_SERVER_ERROR,"Internal server error");
 
         }
     }
@@ -67,12 +69,12 @@ public class DeviceResource {
             DeviceDescriptor device = deviceManager.getDevice(id);
 
             if(device == null)
-                return m_config.genericNotFoundError();
+                return m_config.genericError(Response.Status.NOT_FOUND,"Device not Found");
 
             return Response.ok(device).build();
         } catch (Exception e) {
             e.printStackTrace();
-            return m_config.genericInternalError();
+            return m_config.genericError(Response.Status.INTERNAL_SERVER_ERROR,"Internal server error");
 
         }
         
@@ -87,17 +89,26 @@ public class DeviceResource {
         try {
             System.out.println("Loading...");
 
-            if(desc == null || desc.getId() == null || desc.getId().length() == 0)
-                return m_config.genericNotFoundError();
+            String id = desc.getId();
+
+            if(desc == null || id == null || id.length() == 0)
+                return m_config.genericError(Response.Status.BAD_REQUEST,"Check the request Caion!");
 
             DeviceManager deviceManager = m_config.getDeviceManager();
-
             
+            if(deviceManager.getDevice(id) != null)
+                return m_config.genericError(Response.Status.CONFLICT,"Device with the same UUID Exist");
 
-            return Response.ok(desc).build();
+            deviceManager.createNewDevice(desc);
+
+            String requestPath = uriInfo.getAbsolutePath().toString();
+            String locationHeaderString = String.format("%s/%s", requestPath, id);
+
+            return Response.created(new URI(locationHeaderString)).build();
+            
         } catch (Exception e) {
             e.printStackTrace();
-            return m_config.genericInternalError();
+            return m_config.genericError(Response.Status.INTERNAL_SERVER_ERROR,"Internal Server Error!");
 
         }
         
