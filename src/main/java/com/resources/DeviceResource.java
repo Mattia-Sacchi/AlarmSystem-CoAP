@@ -8,6 +8,7 @@ import com.Managers.DeviceManager;
 import io.dropwizard.jersey.errors.ErrorMessage;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -15,6 +16,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 
 
@@ -68,6 +70,31 @@ public class DeviceResource {
                 return m_config.genericNotFoundError();
 
             return Response.ok(device).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return m_config.genericInternalError();
+
+        }
+        
+    }
+
+    @POST
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createDevice(@Context ContainerRequestContext req
+        ,@Context UriInfo uriInfo, DeviceDescriptor desc)
+    {
+        try {
+            System.out.println("Loading...");
+
+            if(desc == null || desc.getId() == null || desc.getId().length() == 0)
+                return m_config.genericNotFoundError();
+
+            DeviceManager deviceManager = m_config.getDeviceManager();
+
+            
+
+            return Response.ok(desc).build();
         } catch (Exception e) {
             e.printStackTrace();
             return m_config.genericInternalError();

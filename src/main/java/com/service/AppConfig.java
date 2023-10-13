@@ -31,6 +31,15 @@ public class AppConfig extends Configuration {
                 .build();
     }
 
+    public Response genericBadRequestError()
+    {
+        return Response.status(Response.Status.NOT_FOUND)
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(new ErrorMessage(
+                Response.Status.NOT_FOUND.getStatusCode(),"No Devices found"))
+                .build();
+    }
+
     public DeviceManager getDeviceManager(){
         if(m_deviceManager == null)
             m_deviceManager = new DeviceManager();

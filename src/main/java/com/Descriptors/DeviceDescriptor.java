@@ -5,16 +5,7 @@ public class DeviceDescriptor {
     private String type;
     private String manufacturer;
     private String swVersion;
-/*
- * Json
- * {
-2 " uuid ": " device00002 ",
-3 " type ": " iot : demosensor ",
-4 " softwareVersion ": " v0 .0.0.1" ,
-5 " manufacturer ": " Acme - Inc "
-6 }
 
-*/
     public boolean equals(DeviceDescriptor  device)
     {
         return device.id == this.id;
