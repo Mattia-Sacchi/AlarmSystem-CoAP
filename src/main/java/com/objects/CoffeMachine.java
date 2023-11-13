@@ -48,7 +48,7 @@ public class CoffeMachine {
     {
         coffes = new ArrayList<Integer>(CoffeTypes.CT_COUNT.getValue());
         for(int i = 0; i < coffes.size(); i++)
-            coffes.set(i, 0);
+            coffes.add(0);
         total = 0;
     }
 

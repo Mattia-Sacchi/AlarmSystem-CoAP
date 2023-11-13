@@ -13,7 +13,7 @@ public class CoapCoffeMachineProcess extends CoapServer {
 
         this.add(new TemperatureResource("temperature"));
         this.add(new CapsulaResource("capsule"));
-        this.add(new CoffeActuatorResource("cofee"));
+        this.add(new CoffeActuatorResource("coffee"));
 
     }
 
@@ -23,7 +23,8 @@ public class CoapCoffeMachineProcess extends CoapServer {
         coapServer.start();
         coapServer.getRoot().getChildren().forEach( resource->{
         System.out.println(
-            String.format("Resource %s -> URI: %s ( Observable: %b )", resource.getName(), resource.getURI(), resource.isObservable()));
+            String.format("Resource %s -> URI: %s ( Observable: %b )",
+            resource.getName(), resource.getURI(), resource.isObservable()));
         });
 
     }
