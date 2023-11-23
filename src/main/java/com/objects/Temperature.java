@@ -14,6 +14,15 @@ public class Temperature {
     private long timestamp;
     private double temperature;
 
+    public double getValue() 
+    {
+        return temperature;
+    }
+    public long getTimestamp() 
+    {
+        return timestamp;
+    }
+
     public void measure()
     {
         temperature = ( random.nextDouble() * 10 ) + TEMPERATURE_MIN;

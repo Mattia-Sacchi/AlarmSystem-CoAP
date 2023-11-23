@@ -10,10 +10,11 @@ public class CoapCoffeMachineProcess extends CoapServer {
     public CoapCoffeMachineProcess()
     {
         super();
+        String deviceId = "coffe-machine-001";
 
-        this.add(new TemperatureResource("temperature"));
-        this.add(new CapsulaResource("capsule"));
-        this.add(new CoffeActuatorResource("coffee"));
+        this.add(new TemperatureResource("temperature",deviceId));
+        this.add(new CapsulaResource("capsule",deviceId));
+        this.add(new CoffeActuatorResource("coffee",deviceId));
 
     }
 

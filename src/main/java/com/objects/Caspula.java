@@ -12,10 +12,22 @@ public class Caspula {
     private long timestamp;
     private Random random;
 
+
     public void setCapsul(boolean noCap)
     {   
         presentContinuous = noCap;
     }
+
+    public boolean getValue() 
+    {
+        return presentContinuous;
+    }
+    
+    public long getTimestamp() 
+    {
+        return timestamp;
+    }
+
 
     public boolean isThere()
     {
