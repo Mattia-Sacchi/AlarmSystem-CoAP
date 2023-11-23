@@ -1,5 +1,6 @@
 package com.resource;
 import java.util.Optional;
+import java.util.Random;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -76,6 +77,19 @@ public class CapsulaResource extends CoapResource{
             else
                 exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
             
+        } catch (Exception e) {
+            exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public void handlePOST(CoapExchange exchange)
+    {
+        System.out.println("Chiamato");
+        try {
+            temp.setCapsul(true);
+            exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+            changed();
         } catch (Exception e) {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }

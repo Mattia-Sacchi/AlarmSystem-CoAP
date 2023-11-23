@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.WebLink;
 import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -18,7 +19,7 @@ import com.utils.SenMLPack;
 
 public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";    
-    private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.wll-known/core";
+    private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.well-known/core";
     private static String RT_TEMPERATURE_SENSOR = "com.resource.TemperatureResource";
     private static String RT_CASPULA_SENSOR = "com.resource.CaspulaResource";
     private static String RT_ACTUATOR_SENSOR = "com.resource.ActuatorResource";
@@ -36,11 +37,17 @@ public class CoapAutomaticClient {
 
             CoapResponse response = client.advanced(request);
 
-            if(response == null)
+            if(response == null){
+                System.out.println("No risposta");
                 return false;
+            }
             
             if(response.getOptions().getContentFormat() != MediaTypeRegistry.APPLICATION_LINK_FORMAT)
+            {
+                System.out.println("Format diverso");
                 return false;
+            }
+
             
             Set<WebLink> links = LinkFormat.parse(response.getResponseText());
             links.forEach(link -> {
@@ -64,11 +71,14 @@ public class CoapAutomaticClient {
                 });
             });
 
+            
+
             return (targetActuatorUri != null && targetTemperatureUri != null && targetCaspulaUri != null);
             
             
             
         } catch (Exception e) {
+            
             return false;
         }
     }
@@ -107,6 +117,23 @@ public class CoapAutomaticClient {
         }
     }
 
+    private static boolean createCaspula(CoapClient client)
+    {
+        try{
+            Request request = new Request(Code.POST);
+            request.setURI(String.format("%s%s",COAP_ENDPOINT, targetCaspulaUri)); 
+            System.out.println(String.format("%s%s",COAP_ENDPOINT, targetCaspulaUri));
+            request.setConfirmable(true);
+            System.out.println(Utils.prettyPrint(request));
+            CoapResponse response = client.advanced(request);
+            System.out.println(Utils.prettyPrint(response));
+
+            return ( response != null && response.getCode().equals(CoAP.ResponseCode.CHANGED));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
         if(!validateTargetDevice(client))
@@ -118,6 +145,7 @@ public class CoapAutomaticClient {
         if(!isCoffeAvaiable(client))
         {
             System.out.println("No Capsule al momento!");
+            System.out.println(createCaspula(client) ? "Ne ho aggiunta una per pietà": "No capsula");
             return;
         }
 
