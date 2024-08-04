@@ -75,6 +75,7 @@ public class CoffeActuatorResource  extends CoapResource{
     @Override
     public void handleGET(CoapExchange exchange)
     {
+        System.out.println("A");
         try {
             
             if(!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
