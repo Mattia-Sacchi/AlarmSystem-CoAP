@@ -4,16 +4,21 @@ public class TouchBiometricSensor {
 
     String alphaNumericData;
 
-    TouchBiometricSensor() {
+    public TouchBiometricSensor() {
         alphaNumericData = "Lorem Ipsum";
     }
 
-    void setBiometricData(String biometricData) {
+    public void setBiometricData(String biometricData) {
         alphaNumericData = biometricData;
     }
 
-    String getBiometricData() {
+    public String getBiometricData() {
         return alphaNumericData;
+    }
+
+    public long getTimestamp()
+    {
+        return System.currentTimeMillis();
     }
 
 }

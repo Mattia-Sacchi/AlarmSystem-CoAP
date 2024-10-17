@@ -1,11 +1,26 @@
 package com.resource;
 
+import java.util.Optional;
+
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.google.gson.Gson;
+import com.objects.TouchBiometricSensor;
 import com.utils.CoreInterfaces;
+import com.utils.SenMLPack;
+import com.utils.SenMLRecord;
 
-public class TouchBiometricSensorResource {
+public class TouchBiometricSensorResource extends CoapResource{
+
+    Gson gson;
+    private static final String OBJECT_TITLE = "TouchBiometricSensor";
+    TouchBiometricSensor sensor;
+    private String deviceId;
+
     public TouchBiometricSensorResource(String name, String deviceId) {
         super(name);
         getAttributes().setTitle(OBJECT_TITLE);
@@ -20,5 +35,45 @@ public class TouchBiometricSensorResource {
         getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));
 
     }
+
+    private Optional<String> getJsonSenMlResponse() {
+        try {
+
+            SenMLPack pack = new SenMLPack();
+            SenMLRecord record = new SenMLRecord();
+            record.setBn(deviceId);
+            record.setN(getName());
+            pack.add(record);
+            return Optional.of(this.gson.toJson(pack));
+
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+
+    @Override
+    public void handleGET(CoapExchange exchange) {
+        try {
+
+            if (!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
+                    || exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON)) {
+                exchange.respond(CoAP.ResponseCode.CONTENT,sensor.getBiometricData(),
+                        MediaTypeRegistry.TEXT_PLAIN);
+                return;
+            }
+
+            Optional<String> senMlPayload = getJsonSenMlResponse();
+            if (senMlPayload.isPresent())
+                exchange.respond(CoAP.ResponseCode.CONTENT, senMlPayload.get(),
+                        MediaTypeRegistry.APPLICATION_SENML_JSON);
+            else
+                exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+
+        } catch (Exception e) {
+            exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

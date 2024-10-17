@@ -16,6 +16,11 @@ public class InfixSensor {
         this.state = random.nextBoolean();
     }
 
+    public boolean getState()
+    {
+        return state;
+    }
+
     public long getTimestamp() {
         return System.currentTimeMillis();
     }

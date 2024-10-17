@@ -1,17 +1,9 @@
 package com.example;
 
 import org.eclipse.californium.core.CoapServer;
-
-import com.objects.AlarmController;
-import com.objects.AlarmSwitch;
-import com.objects.InfixSensor;
-import com.objects.TouchBiometricSensor;
 import com.resource.AlarmControllerResource;
 import com.resource.AlarmSwitchResource;
-import com.resource.CapsulaResource;
-import com.resource.CoffeActuatorResource;
 import com.resource.InfixSensorResource;
-import com.resource.TemperatureResource;
 import com.resource.TouchBiometricSensorResource;
 
 public class CoapDataManagerProcess extends CoapServer {

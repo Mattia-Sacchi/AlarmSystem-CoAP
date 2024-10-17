@@ -10,7 +10,6 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.google.gson.Gson;
 import com.objects.InfixSensor;
-import com.objects.TouchBiometricSensor;
 import com.utils.CoreInterfaces;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
