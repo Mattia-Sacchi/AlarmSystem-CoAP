@@ -5,6 +5,7 @@ import com.resource.AlarmControllerResource;
 import com.resource.AlarmSwitchResource;
 import com.resource.InfixSensorResource;
 import com.resource.TouchBiometricSensorResource;
+import com.utils.Log;
 
 public class CoapDataManagerProcess extends CoapServer {
 
@@ -20,7 +21,6 @@ public class CoapDataManagerProcess extends CoapServer {
     }
 
     public static void main(String[] args) throws Exception {
-
         CoapDataManagerProcess coapServer = new CoapDataManagerProcess();
         coapServer.start();
         coapServer.getRoot().getChildren().forEach(resource -> {

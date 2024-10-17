@@ -15,17 +15,20 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
 
 import com.google.gson.Gson;
+import com.utils.Log;
 import com.utils.SenMLPack;
 
 public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";
     private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.well-known/core";
-    private static String RT_TEMPERATURE_SENSOR = "com.resource.TemperatureResource";
-    private static String RT_CASPULA_SENSOR = "com.resource.CaspulaResource";
-    private static String RT_ACTUATOR_SENSOR = "com.resource.ActuatorResource";
-    private static String targetTemperatureUri = null;
-    private static String targetCaspulaUri = null;
-    private static String targetActuatorUri = null;
+    private static String RT_ALARM_CONTROLLER = "com.resource.AlarmController";
+    private static String RT_ALARM_SWITCH = "com.resource.AlarmSwitch";
+    private static String RT_INFIX_SENSOR = "com.resource.InfixSensor";
+    private static String RT_TOUCH_BIOMETRIC_SENSOR = "com.resource.TouchBiometricSensor";
+    private static String targetAlarmControllerUri = null;
+    private static String targetAlarmSwitchUri = null;
+    private static String targetInfixSensorUri = null;
+    private static String targetTouchBiometricSensorUri = null;
     private static Gson gson = new Gson();
 
     private static boolean validateTargetDevice(CoapClient client) {
@@ -37,12 +40,12 @@ public class CoapAutomaticClient {
             CoapResponse response = client.advanced(request);
 
             if (response == null) {
-                System.out.println("No risposta");
-                return false;
+                Log.error("No response", String.format("No response from %s", COAP_ENDPOINT));
+                // return false;
             }
 
             if (response.getOptions().getContentFormat() != MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
-                System.out.println("Format diverso");
+                Log.error("Wrong format", "Format expected: Application Link");
                 return false;
             }
 
@@ -57,17 +60,27 @@ public class CoapAutomaticClient {
                             if (!key.equals("rt"))
                                 return;
 
-                            if (value.equals(RT_TEMPERATURE_SENSOR))
-                                targetTemperatureUri = uri;
-                            else if (value.equals(RT_CASPULA_SENSOR))
-                                targetCaspulaUri = uri;
-                            else if (value.equals(RT_ACTUATOR_SENSOR))
-                                targetActuatorUri = uri;
+                            Log.debug("Found Resource", value);
+
+                            if (value.equals(RT_ALARM_CONTROLLER))
+                                targetAlarmControllerUri = uri;
+                            else if (value.equals(RT_ALARM_SWITCH))
+                                targetAlarmSwitchUri = uri;
+                            else if (value.equals(RT_INFIX_SENSOR))
+                                targetInfixSensorUri = uri;
+                            else if (value.equals(RT_TOUCH_BIOMETRIC_SENSOR))
+                                targetTouchBiometricSensorUri = uri;
 
                         });
             });
 
-            return (targetActuatorUri != null && targetTemperatureUri != null && targetCaspulaUri != null);
+            boolean result = true;
+            result = result && (targetAlarmControllerUri != null);
+            result = result && (targetAlarmSwitchUri != null);
+            result = result && (targetInfixSensorUri != null);
+            result = result && (targetTouchBiometricSensorUri != null);
+
+            return result;
 
         } catch (Exception e) {
 
@@ -140,23 +153,6 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean light(CoapClient client) {
-        try {
-            Request request = new Request(Code.GET);
-            request.setURI(String.format("coap://192.168.4.1:5683/light/red"));
-
-            CoapResponse response = client.advanced(request);
-            System.out.println(response.getCode());
-
-            boolean result = (response != null && response.getCode().equals(CoAP.ResponseCode.CONTENT));
-            System.out.println(response.toString());
-            return result;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
     private static boolean trafficLight(CoapClient client) {
         try {
             Request request = new Request(Code.PUT);
@@ -174,34 +170,10 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean trafficLight(CoapClient client, String payload) {
-        try {
-            Request request = new Request(Code.PUT);
-            request.setURI(String.format("coap://192.168.4.1:5683/trafficlight/"));
-            request.setPayload(String.format(payload));
-            request.setConfirmable(true);
-
-            CoapResponse response = client.advanced(request);
-            System.out.println(response.getCode());
-
-            return (response != null && response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 
-        if (!trafficLight(client)) {
-            System.out.println("Errore Client non valido");
-            return;
-        } else {
-            System.out.println("Cambiato");
-            return;
-
-        }
+        Log.operationResult(validateTargetDevice(client), "Client Validation");
 
     }
 }

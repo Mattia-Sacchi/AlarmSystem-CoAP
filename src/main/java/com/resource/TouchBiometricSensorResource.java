@@ -14,7 +14,7 @@ import com.utils.CoreInterfaces;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
-public class TouchBiometricSensorResource extends CoapResource{
+public class TouchBiometricSensorResource extends CoapResource {
 
     Gson gson;
     private static final String OBJECT_TITLE = "TouchBiometricSensor";
@@ -51,14 +51,13 @@ public class TouchBiometricSensorResource extends CoapResource{
         }
     }
 
-
     @Override
     public void handleGET(CoapExchange exchange) {
         try {
 
             if (!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
                     || exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON)) {
-                exchange.respond(CoAP.ResponseCode.CONTENT,sensor.getBiometricData(),
+                exchange.respond(CoAP.ResponseCode.CONTENT, sensor.getBiometricData(),
                         MediaTypeRegistry.TEXT_PLAIN);
                 return;
             }
@@ -74,6 +73,5 @@ public class TouchBiometricSensorResource extends CoapResource{
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }
     }
-
 
 }

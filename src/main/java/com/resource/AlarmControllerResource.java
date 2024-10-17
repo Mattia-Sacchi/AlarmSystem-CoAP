@@ -9,12 +9,11 @@ import com.google.gson.Gson;
 import com.objects.AlarmController;
 import com.utils.CoreInterfaces;
 
-public class AlarmControllerResource  extends CoapResource {
+public class AlarmControllerResource extends CoapResource {
     Gson gson;
     private static final String OBJECT_TITLE = "AlarmController";
     AlarmController controller;
     private String deviceId;
-
 
     public AlarmControllerResource(String name, String deviceId) {
         super(name);
@@ -24,7 +23,7 @@ public class AlarmControllerResource  extends CoapResource {
         this.deviceId = deviceId;
 
         // Init
-        getAttributes().addAttribute("rt", "com.resource.CaspulaResource");
+        getAttributes().addAttribute("rt", "com.resource.AlarmController");
         getAttributes().addAttribute("if", CoreInterfaces.CORE_S.getValue());
         getAttributes().addAttribute("ct", Integer.toString((MediaTypeRegistry.APPLICATION_SENML_JSON)));
         getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));
@@ -41,6 +40,5 @@ public class AlarmControllerResource  extends CoapResource {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }
     }
-
 
 }

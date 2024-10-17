@@ -9,12 +9,11 @@ import com.google.gson.Gson;
 import com.objects.AlarmController;
 import com.utils.CoreInterfaces;
 
-public class AlarmSwitchResource extends CoapResource{
+public class AlarmSwitchResource extends CoapResource {
     Gson gson;
     private static final String OBJECT_TITLE = "AlarmSwitch";
     AlarmController controller;
     private String deviceId;
-
 
     public AlarmSwitchResource(String name, String deviceId) {
         super(name);
@@ -31,8 +30,6 @@ public class AlarmSwitchResource extends CoapResource{
 
     }
 
-
-
     @Override
     public void handlePOST(CoapExchange exchange) {
         try {
@@ -43,6 +40,5 @@ public class AlarmSwitchResource extends CoapResource{
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }
     }
-
 
 }

@@ -17,7 +17,7 @@ import com.utils.SenMLRecord;
 public class InfixSensorResource extends CoapResource {
 
     Gson gson;
-    private static final String OBJECT_TITLE = "TouchBiometricSensor";
+    private static final String OBJECT_TITLE = "InfixSensor";
     InfixSensor sensor;
     private String deviceId;
 
@@ -25,11 +25,10 @@ public class InfixSensorResource extends CoapResource {
         super(name);
         getAttributes().setTitle(OBJECT_TITLE);
         gson = new Gson();
-
         this.deviceId = deviceId;
 
         // Init
-        getAttributes().addAttribute("rt", "com.resource.TouchBiometricSensor");
+        getAttributes().addAttribute("rt", "com.resource.InfixSensor");
         getAttributes().addAttribute("if", CoreInterfaces.CORE_S.getValue());
         getAttributes().addAttribute("ct", Integer.toString((MediaTypeRegistry.APPLICATION_SENML_JSON)));
         getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));
