@@ -25,4 +25,8 @@ public class ResourceTypesManager {
         return resourceTypes;
     }
 
+    public static Map<ResourceTypes, String> getDF() {
+        return defaultNames;
+    }
+
 }

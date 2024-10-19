@@ -5,37 +5,22 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import com.google.gson.Gson;
+import com.example.CoapDataManagerProcess;
+import com.example.ResourceTypes;
 import com.objects.AlarmController;
-import com.utils.CoreInterfaces;
 
-public class AlarmControllerResource extends CoapResource {
-    Gson gson;
+public class AlarmControllerResource extends StandardCoapResource {
     private static final String OBJECT_TITLE = "AlarmController";
     private static AlarmController controller;
-    private String deviceId;
-
-    public static String getDefaultName() {
-        return "alarm-controller";
-    }
 
     public AlarmController getControllerInstance() {
         return controller;
     }
 
-    public AlarmControllerResource(String name, String deviceId) {
-        super(name);
+    public AlarmControllerResource(CoapDataManagerProcess dataManager, String deviceId, ResourceTypes type) {
+        super(dataManager, deviceId, type);
         getAttributes().setTitle(OBJECT_TITLE);
-        gson = new Gson();
         controller = new AlarmController();
-        this.deviceId = deviceId;
-
-        // Init
-        getAttributes().addAttribute("rt", "com.resource.AlarmController");
-        getAttributes().addAttribute("if", CoreInterfaces.CORE_S.getValue());
-        getAttributes().addAttribute("ct", Integer.toString((MediaTypeRegistry.APPLICATION_SENML_JSON)));
-        getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));
-
     }
 
     @Override

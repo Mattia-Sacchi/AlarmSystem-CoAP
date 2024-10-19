@@ -24,13 +24,13 @@ public class StandardCoapResource extends CoapResource {
 
     }
 
-    public StandardCoapResource(CoapDataManagerProcess dataManager, String name, String deviceId, ResourceTypes type) {
-        super(name);
+    public StandardCoapResource(CoapDataManagerProcess dataManager, String deviceId, ResourceTypes type) {
+        super(ResourceTypesManager.getDF().get(type));
         process = dataManager;
         this.deviceId = deviceId;
         gson = new Gson();
 
-        getAttributes().addAttribute("rt", ResourceTypesManager.getMap().get(type));
+        getAttributes().addAttribute("rt", ResourceTypesManager.getRT().get(type));
         getAttributes().addAttribute("if", CoreInterfaces.CORE_S.getValue());
         getAttributes().addAttribute("ct", Integer.toString((MediaTypeRegistry.APPLICATION_SENML_JSON)));
         getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));

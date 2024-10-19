@@ -21,14 +21,14 @@ public class CoapDataManagerProcess extends CoapServer {
         super();
         String deviceId = "alarm-001";
 
-        alarmController = new AlarmControllerResource(this, AlarmControllerResource.getDefaultName(),
+        alarmController = new AlarmControllerResource(this,
                 deviceId, ResourceTypes.RT_ALARM_CONTROLLER);
-        alarmSwitch = new AlarmSwitchResource(this, AlarmSwitchResource.getDefaultName(), deviceId,
+        alarmSwitch = new AlarmSwitchResource(this, deviceId,
                 ResourceTypes.RT_ALARM_SWITCH);
-        infixSensor = new InfixSensorResource(this, InfixSensorResource.getDefaultName(), deviceId,
+        infixSensor = new InfixSensorResource(this, deviceId,
                 ResourceTypes.RT_INFIX_SENSOR);
         touchBiometricSensor = new TouchBiometricSensorResource(this,
-                TouchBiometricSensorResource.getDefaultName(), deviceId, ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR);
+                deviceId, ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR);
 
         this.add(alarmController);
         this.add(alarmSwitch);
@@ -37,26 +37,20 @@ public class CoapDataManagerProcess extends CoapServer {
     }
 
     public StandardCoapResource getInstance(ResourceTypes type) {
-        /*
-         * switch (type) {
-         * case RT_ALARM_CONTROLLER:
-         * return alarmController;
-         * break;
-         * case RT_ALARM_SWITCH:
-         * return alarmSwitch;
-         * break;
-         * case RT_INFIX_SENSOR:
-         * return infixSensor;
-         * break;
-         * case RT_TOUCH_BIOMETRIC_SENSOR:
-         * return touchBiometricSensor;
-         * break;
-         * 
-         * default:
-         * break;
-         * }
-         */
-        return new StandardCoapResource(null, null, null, type);
+
+        switch (type) {
+            case RT_ALARM_CONTROLLER:
+                return alarmController;
+            case RT_ALARM_SWITCH:
+                return alarmSwitch;
+            case RT_INFIX_SENSOR:
+                return infixSensor;
+            case RT_TOUCH_BIOMETRIC_SENSOR:
+                return touchBiometricSensor;
+
+            default:
+                return new StandardCoapResource(null, null, null);
+        }
 
     }
 

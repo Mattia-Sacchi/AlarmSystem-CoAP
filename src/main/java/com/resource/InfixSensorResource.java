@@ -8,34 +8,27 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
+import com.example.CoapDataManagerProcess;
+import com.example.ResourceTypes;
 import com.google.gson.Gson;
 import com.objects.InfixSensor;
 import com.utils.CoreInterfaces;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
-public class InfixSensorResource extends CoapResource {
+public class InfixSensorResource extends StandardCoapResource {
 
-    Gson gson;
     private static final String OBJECT_TITLE = "InfixSensor";
     InfixSensor sensor;
-    private String deviceId;
 
     public static String getDefaultName() {
         return "infix-sensor";
     }
 
-    public InfixSensorResource(String name, String deviceId) {
-        super(name);
+    public InfixSensorResource(CoapDataManagerProcess dataManager, String deviceId, ResourceTypes type) {
+        super(dataManager, deviceId, type);
         getAttributes().setTitle(OBJECT_TITLE);
-        gson = new Gson();
-        this.deviceId = deviceId;
-
-        // Init
-        getAttributes().addAttribute("rt", "com.resource.InfixSensor");
-        getAttributes().addAttribute("if", CoreInterfaces.CORE_S.getValue());
-        getAttributes().addAttribute("ct", Integer.toString((MediaTypeRegistry.APPLICATION_SENML_JSON)));
-        getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));
+        sensor = new InfixSensor();
 
     }
 
@@ -44,7 +37,7 @@ public class InfixSensorResource extends CoapResource {
 
             SenMLPack pack = new SenMLPack();
             SenMLRecord record = new SenMLRecord();
-            record.setBn(deviceId);
+            record.setBn(getDeviceId());
             record.setN(getName());
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));

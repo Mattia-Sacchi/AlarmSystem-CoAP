@@ -20,6 +20,7 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
 
 import com.example.ResourceTypes;
+import com.example.ResourceTypesManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
 import com.utils.Log;
@@ -30,14 +31,6 @@ public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";
     private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.well-known/core";
 
-    
-
-    private static final Map<ResourceTypes, String> resourceTypes = Stream.of(
-            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, "com.resource.AlarmController"),
-            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_SWITCH, "com.resource.AlarmSwitch"),
-            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_INFIX_SENSOR, "com.resource.InfixSensor"),
-            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR, "com.resource.TouchBiometricSensor"))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     private static final Map<ResourceTypes, String> uris = Stream.of(
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, ""),
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_SWITCH, ""),
@@ -92,7 +85,7 @@ public class CoapAutomaticClient {
 
                             // Log.debug("Found Resource", value);
 
-                            for (Map.Entry<ResourceTypes, String> it : resourceTypes.entrySet()) {
+                            for (Map.Entry<ResourceTypes, String> it : ResourceTypesManager.getRT().entrySet()) {
                                 if (value.equals(it.getValue()))
                                     uris.put(it.getKey(), uri);
                             }

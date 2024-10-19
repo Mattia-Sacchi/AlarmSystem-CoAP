@@ -31,9 +31,9 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
         return "touch-biometric-sensor";
     }
 
-    public TouchBiometricSensorResource(CoapDataManagerProcess dataManager, String name, String deviceId,
+    public TouchBiometricSensorResource(CoapDataManagerProcess dataManager, String deviceId,
             ResourceTypes type) {
-        super(dataManager, name, deviceId, type);
+        super(dataManager, deviceId, type);
         getAttributes().setTitle(OBJECT_TITLE);
         sensor = new TouchBiometricSensor();
     }
@@ -96,13 +96,16 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
                 return;
             }
 
+            // I take a alarm system resource Instance
+            AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
+            // I take a alarm siren resource Instance
+            AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
+                    ResourceTypes.RT_ALARM_CONTROLLER));
+
             // I take a alarm system Instance
-            AlarmSwitch alarmSwitch = ((AlarmSwitchResource) getChild(AlarmSwitchResource.getDefaultName()))
-                    .getAlarmSwitchInstance();
+            AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
             // I take a alarm siren Instance
-            AlarmController alarmController = ((AlarmControllerResource) getChild(
-                    AlarmControllerResource.getDefaultName()))
-                    .getControllerInstance();
+            AlarmController alarmController = alarmControllerRes.getControllerInstance();
 
             // I take the current state of the system
             boolean alarmSystemState = alarmSwitch.getState();
