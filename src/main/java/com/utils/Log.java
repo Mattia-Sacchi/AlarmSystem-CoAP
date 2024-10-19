@@ -1,14 +1,5 @@
 package com.utils;
 
-/*
-    public static void error(String... text)
-    {
-        error("");
-        for (String t : text)
-            System.out.print(t + " ");
-    }
-*/
-
 public class Log {
 
     private static String OpeningText = "\n\t";
@@ -51,14 +42,32 @@ public class Log {
         return operationResult(result, buildComposedString(title, description));
     }
 
+    public static void error(String title, String... text) {
+        error(title);
+        for (String t : text)
+            printLine("Red", t);
+    }
+
     public static void error(String text) {
         String outText = OpeningText + "Error: " + text + ClosingText;
         printLine("Red", outText);
     }
 
+    public static void success(String title, String... text) {
+        success(title);
+        for (String t : text)
+            printLine("Green", t);
+    }
+
     public static void success(String text) {
         String outText = OpeningText + "Success: " + text + ClosingText;
         printLine("Green", outText);
+    }
+
+    public static void failure(String title, String... text) {
+        failure(title);
+        for (String t : text)
+            printLine("Yellow", t);
     }
 
     public static void failure(String text) {
@@ -72,6 +81,12 @@ public class Log {
         else
             failure(text);
         return result;
+    }
+
+    public static void debug(String title, String... text) {
+        debug(title);
+        for (String t : text)
+            printLine("Yellow", t);
     }
 
     public static void debug(String text) {

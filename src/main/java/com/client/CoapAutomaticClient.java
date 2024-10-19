@@ -60,7 +60,7 @@ public class CoapAutomaticClient {
                             if (!key.equals("rt"))
                                 return;
 
-                            Log.debug("Found Resource", value);
+                            // Log.debug("Found Resource", value);
 
                             if (value.equals(RT_ALARM_CONTROLLER))
                                 targetAlarmControllerUri = uri;
@@ -88,88 +88,6 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean isCoffeAvaiable(CoapClient client) {
-        try {
-            Request request = new Request(Code.GET);
-            request.setOptions(new OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
-            request.setURI(String.format(COAP_ENDPOINT, targetCaspulaUri));
-            request.setConfirmable(true);
-            CoapResponse response = client.advanced(request);
-
-            if (response == null)
-                return false;
-
-            String payload = response.getResponseText();
-            SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
-            return pack.get(0).getVb();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static boolean trigger(CoapClient client) {
-        try {
-            Request request = new Request(Code.POST);
-            request.setURI(String.format(COAP_ENDPOINT, targetActuatorUri));
-            request.setConfirmable(true);
-            CoapResponse response = client.advanced(request);
-
-            return (response != null && response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static boolean createCaspula(CoapClient client) {
-        try {
-            Request request = new Request(Code.POST);
-            request.setURI(String.format("%s%s", COAP_ENDPOINT, targetCaspulaUri));
-            System.out.println(String.format("%s%s", COAP_ENDPOINT, targetCaspulaUri));
-            request.setConfirmable(true);
-            System.out.println(Utils.prettyPrint(request));
-            CoapResponse response = client.advanced(request);
-            System.out.println(Utils.prettyPrint(response));
-
-            return (response != null && response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static boolean light(CoapClient client, String color, boolean state) {
-        try {
-            Request request = new Request(Code.PUT);
-            request.setURI(String.format("coap://192.168.4.1:5683/light/").concat(color));
-            request.setPayload(state ? "1" : "0");
-            request.setConfirmable(true);
-
-            CoapResponse response = client.advanced(request);
-            System.out.println(response.getCode());
-
-            return (response != null && response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
-    private static boolean trafficLight(CoapClient client) {
-        try {
-            Request request = new Request(Code.PUT);
-            request.setURI(String.format("coap://192.168.4.1:5683/trafficlight/"));
-            request.setPayload(String.format("{\"timings\":[10000,5000,6000],\"cmd\":2,\"freq\":350,\"which\":5}"));
-            request.setConfirmable(true);
-
-            CoapResponse response = client.advanced(request);
-            System.out.println(response.getCode());
-
-            return (response != null && response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 
@@ -177,3 +95,95 @@ public class CoapAutomaticClient {
 
     }
 }
+
+/*
+ * private static boolean isCoffeAvaiable(CoapClient client) {
+ * try {
+ * Request request = new Request(Code.GET);
+ * request.setOptions(new
+ * OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
+ * request.setURI(String.format(COAP_ENDPOINT, targetCaspulaUri));
+ * request.setConfirmable(true);
+ * CoapResponse response = client.advanced(request);
+ * 
+ * if (response == null)
+ * return false;
+ * 
+ * String payload = response.getResponseText();
+ * SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
+ * return pack.get(0).getVb();
+ * } catch (Exception e) {
+ * return false;
+ * }
+ * }
+ * 
+ * private static boolean trigger(CoapClient client) {
+ * try {
+ * Request request = new Request(Code.POST);
+ * request.setURI(String.format(COAP_ENDPOINT, targetActuatorUri));
+ * request.setConfirmable(true);
+ * CoapResponse response = client.advanced(request);
+ * 
+ * return (response != null &&
+ * response.getCode().equals(CoAP.ResponseCode.CHANGED));
+ * } catch (Exception e) {
+ * return false;
+ * }
+ * }
+ * 
+ * private static boolean createCaspula(CoapClient client) {
+ * try {
+ * Request request = new Request(Code.POST);
+ * request.setURI(String.format("%s%s", COAP_ENDPOINT, targetCaspulaUri));
+ * System.out.println(String.format("%s%s", COAP_ENDPOINT, targetCaspulaUri));
+ * request.setConfirmable(true);
+ * System.out.println(Utils.prettyPrint(request));
+ * CoapResponse response = client.advanced(request);
+ * System.out.println(Utils.prettyPrint(response));
+ * 
+ * return (response != null &&
+ * response.getCode().equals(CoAP.ResponseCode.CHANGED));
+ * } catch (Exception e) {
+ * return false;
+ * }
+ * }
+ * 
+ * private static boolean light(CoapClient client, String color, boolean state)
+ * {
+ * try {
+ * Request request = new Request(Code.PUT);
+ * request.setURI(String.format("coap://192.168.4.1:5683/light/").concat(color))
+ * ;
+ * request.setPayload(state ? "1" : "0");
+ * request.setConfirmable(true);
+ * 
+ * CoapResponse response = client.advanced(request);
+ * System.out.println(response.getCode());
+ * 
+ * return (response != null &&
+ * response.getCode().equals(CoAP.ResponseCode.CHANGED));
+ * } catch (Exception e) {
+ * System.out.println(e.getMessage());
+ * return false;
+ * }
+ * }
+ * 
+ * private static boolean trafficLight(CoapClient client) {
+ * try {
+ * Request request = new Request(Code.PUT);
+ * request.setURI(String.format("coap://192.168.4.1:5683/trafficlight/"));
+ * request.setPayload(String.format(
+ * "{\"timings\":[10000,5000,6000],\"cmd\":2,\"freq\":350,\"which\":5}"));
+ * request.setConfirmable(true);
+ * 
+ * CoapResponse response = client.advanced(request);
+ * System.out.println(response.getCode());
+ * 
+ * return (response != null &&
+ * response.getCode().equals(CoAP.ResponseCode.CHANGED));
+ * } catch (Exception e) {
+ * System.out.println(e.getMessage());
+ * return false;
+ * }
+ * }
+ */

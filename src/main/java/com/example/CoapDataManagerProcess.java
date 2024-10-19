@@ -9,6 +9,8 @@ import com.utils.Log;
 
 public class CoapDataManagerProcess extends CoapServer {
 
+    String fingerPrintPassword = "ar4d-9jk2-apo9";
+
     public CoapDataManagerProcess() {
         super();
         String deviceId = "alarm-001";
@@ -17,17 +19,16 @@ public class CoapDataManagerProcess extends CoapServer {
         this.add(new AlarmSwitchResource("alarm-switch", deviceId));
         this.add(new InfixSensorResource("infix-sensor", deviceId));
         this.add(new TouchBiometricSensorResource("touch-biometric-sensor", deviceId));
-
     }
 
     public static void main(String[] args) throws Exception {
         CoapDataManagerProcess coapServer = new CoapDataManagerProcess();
         coapServer.start();
         coapServer.getRoot().getChildren().forEach(resource -> {
-            System.out.println(
+
+            Log.debug(
                     String.format("Resource %s -> URI: %s ( Observable: %b )",
                             resource.getName(), resource.getURI(), resource.isObservable()));
         });
-
     }
 }
