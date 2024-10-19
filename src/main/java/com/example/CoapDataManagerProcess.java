@@ -13,10 +13,15 @@ public class CoapDataManagerProcess extends CoapServer {
         super();
         String deviceId = "alarm-001";
 
-        this.add(new AlarmControllerResource("alarm-controller", deviceId));
-        this.add(new AlarmSwitchResource("alarm-switch", deviceId));
-        this.add(new InfixSensorResource("infix-sensor", deviceId));
-        this.add(new TouchBiometricSensorResource("touch-biometric-sensor", deviceId));
+        AlarmControllerResource alarmControllerResource = new AlarmControllerResource("alarm-controller", deviceId);
+        AlarmSwitchResource alarmSwitchResource = new AlarmSwitchResource("alarm-switch", deviceId);
+        InfixSensorResource infixSensorResource = new InfixSensorResource("infix-sensor", deviceId);
+        TouchBiometricSensorResource touchBiometricSensorResource = new TouchBiometricSensorResource(
+                "touch-biometric-sensor", deviceId);
+        this.add(alarmControllerResource);
+        this.add(alarmSwitchResource);
+        this.add(infixSensorResource);
+        this.add(touchBiometricSensorResource);
     }
 
     public static void main(String[] args) throws Exception {
