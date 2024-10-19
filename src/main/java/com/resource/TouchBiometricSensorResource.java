@@ -56,19 +56,23 @@ public class TouchBiometricSensorResource extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
 
         try {
-            String payload = exchange.getRequestText().toString();
-            boolean result = sensor.addFingerPrint(payload);
-            if (result) {
-                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
-                changed();
-                Log.success("Called");
+            SenMLPack senMLPack = gson.fromJson(exchange.getRequestText(), SenMLPack.class);
 
-            } else
+            // First condition it needs to have at least one record
+            boolean result = !senMLPack.isEmpty();
+            // Check if it has already the fingerprints if so it fails
+            for (SenMLRecord r : senMLPack) {
+                if (!sensor.addFingerPrint(r.getVs()))
+                    result = false;
+            }
 
+            if (!result)
                 exchange.respond(ResponseCode.BAD_REQUEST);
 
+            exchange.respond(ResponseCode.CREATED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+            changed();
+
         } catch (Exception e) {
-            Log.failure("Called");
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }
     }
@@ -76,9 +80,17 @@ public class TouchBiometricSensorResource extends CoapResource {
     @Override
     public void handlePUT(CoapExchange exchange) {
         try {
+            SenMLPack senMLPack = gson.fromJson(exchange.getRequestText(), SenMLPack.class);
+
+            // First condition the size must be one (One check at a time)
+            if (senMLPack.size() != 1) {
+                exchange.respond(ResponseCode.BAD_REQUEST);
+                return;
+            }
 
             exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
             changed();
+
         } catch (Exception e) {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }

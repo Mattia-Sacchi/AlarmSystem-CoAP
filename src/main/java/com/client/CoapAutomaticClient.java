@@ -1,8 +1,12 @@
 package com.client;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
@@ -24,22 +28,48 @@ import com.utils.SenMLRecord;
 public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";
     private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.well-known/core";
-    private static String RT_ALARM_CONTROLLER = "com.resource.AlarmController";
-    private static String RT_ALARM_SWITCH = "com.resource.AlarmSwitch";
-    private static String RT_INFIX_SENSOR = "com.resource.InfixSensor";
-    private static String RT_TOUCH_BIOMETRIC_SENSOR = "com.resource.TouchBiometricSensor";
-    private static String targetAlarmControllerUri = null;
-    private static String targetAlarmSwitchUri = null;
-    private static String targetInfixSensorUri = null;
-    private static String targetTouchBiometricSensorUri = null;
+
+    enum ResourceTypes {
+        RT_ALARM_CONTROLLER,
+        RT_ALARM_SWITCH,
+        RT_INFIX_SENSOR,
+        RT_TOUCH_BIOMETRIC_SENSOR,
+
+    };
+
+    private static final Map<ResourceTypes, String> resourceTypes = Stream.of(
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, "com.resource.AlarmController"),
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_SWITCH, "com.resource.AlarmSwitch"),
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_INFIX_SENSOR, "com.resource.InfixSensor"),
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR, "com.resource.TouchBiometricSensor"))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    private static final Map<ResourceTypes, String> uris = Stream.of(
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, ""),
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_SWITCH, ""),
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_INFIX_SENSOR, ""),
+            new AbstractMap.SimpleEntry<>(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR, ""))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
     private static String testerDeviceId = "tester-device-000";
     private static String testerDeviceName = "CoapAutomaticClient";
     private static Gson gson = new Gson();
 
+    private static String composeUriDefault(ResourceTypes type) {
+        return composeUri(COAP_ENDPOINT, type);
+    }
+
+    private static String composeUri(String endpoint, ResourceTypes type) {
+        return composeUri(endpoint, uris.get(type));
+    }
+
+    private static String composeUri(String endpoint, String uri) {
+        return String.format("%s%s", COAP_ENDPOINT, uri);
+    }
+
     private static boolean validateTargetDevice(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
-            request.setURI(String.format("%s%s", COAP_ENDPOINT, RESOURCE_DISCOVERY_ENDPOINT));
+            request.setURI(composeUri(COAP_ENDPOINT, RESOURCE_DISCOVERY_ENDPOINT));
             request.setConfirmable(true);
 
             CoapResponse response = client.advanced(request);
@@ -67,24 +97,20 @@ public class CoapAutomaticClient {
 
                             // Log.debug("Found Resource", value);
 
-                            if (value.equals(RT_ALARM_CONTROLLER))
-                                targetAlarmControllerUri = uri;
-                            else if (value.equals(RT_ALARM_SWITCH))
-                                targetAlarmSwitchUri = uri;
-                            else if (value.equals(RT_INFIX_SENSOR))
-                                targetInfixSensorUri = uri;
-                            else if (value.equals(RT_TOUCH_BIOMETRIC_SENSOR))
-                                targetTouchBiometricSensorUri = uri;
+                            for (Map.Entry<ResourceTypes, String> it : resourceTypes.entrySet()) {
+                                if (value.equals(it.getValue()))
+                                    uris.put(it.getKey(), uri);
+                            }
 
                         });
             });
 
             // Check if any of the url is invalid -> return false
             boolean result = true;
-            result = result && (targetAlarmControllerUri != null);
-            result = result && (targetAlarmSwitchUri != null);
-            result = result && (targetInfixSensorUri != null);
-            result = result && (targetTouchBiometricSensorUri != null);
+            for (Map.Entry<ResourceTypes, String> it : uris.entrySet()) {
+                if (it.getValue().isEmpty())
+                    return false; // No need to continue
+            }
 
             return result;
 
@@ -97,7 +123,39 @@ public class CoapAutomaticClient {
     private static boolean createFingerprint(CoapClient client, String fingerprint) {
         try {
             Request request = new Request(Code.POST);
-            request.setURI(String.format("%s%s", COAP_ENDPOINT, targetTouchBiometricSensorUri));
+            request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
+            request.setConfirmable(true);
+
+            // Making the formal request with SenML
+            SenMLPack pack = new SenMLPack();
+            SenMLRecord record = new SenMLRecord();
+            record.setBn(testerDeviceId);
+            record.setN(testerDeviceName);
+            record.setVs(fingerprint);
+            pack.add(record);
+
+            // Setting payload with additional check
+            String payload = gson.toJson(pack);
+
+            if (payload == gson.toJson(JsonNull.INSTANCE)) {
+                Log.error("Json Encoding failed");
+                return false;
+            }
+            request.setPayload(payload);
+
+            CoapResponse response = client.advanced(request);
+
+            return (response != null &&
+                    response.getCode().equals(CoAP.ResponseCode.CREATED));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean checkFingerprint(CoapClient client, String fingerprint) {
+        try {
+            Request request = new Request(Code.PUT);
+            request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
             request.setConfirmable(true);
 
             // Making the formal request with SenML
@@ -126,27 +184,12 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean checkFingerprint(CoapClient client, String fingerprint) {
-        try {
-            Request request = new Request(Code.PUT);
-            request.setURI(String.format("%s%s", COAP_ENDPOINT, targetTouchBiometricSensorUri));
-            request.setPayload(fingerprint);
-            request.setConfirmable(true);
-            CoapResponse response = client.advanced(request);
-
-            return (response != null &&
-                    response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
-        Log.operationResult(createFingerprint(client, "a"), "f");
+        Log.operationResult(createFingerprint(client, "aa"), "test");
 
     }
 
