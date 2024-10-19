@@ -43,9 +43,9 @@ public class Log {
     }
 
     public static void error(String title, String... text) {
-        error(title);
+        printLine("red", OpeningText + "Error: " + title);
         for (String t : text)
-            printLine("Red", t);
+            printLine("Red", "\t" + t);
     }
 
     public static void error(String text) {
@@ -54,9 +54,9 @@ public class Log {
     }
 
     public static void success(String title, String... text) {
-        success(title);
+        printLine("Green", OpeningText + "Success: " + title);
         for (String t : text)
-            printLine("Green", t);
+            printLine("Green", "\t" + t);
     }
 
     public static void success(String text) {
@@ -65,9 +65,9 @@ public class Log {
     }
 
     public static void failure(String title, String... text) {
-        failure(title);
+        printLine("Yellow", OpeningText + "Failure: " + title);
         for (String t : text)
-            printLine("Yellow", t);
+            printLine("Yellow", "\t" + t);
     }
 
     public static void failure(String text) {
@@ -84,9 +84,9 @@ public class Log {
     }
 
     public static void debug(String title, String... text) {
-        debug(title);
+        printLine("Debug", OpeningText + "Failure: " + title);
         for (String t : text)
-            printLine("Yellow", t);
+            printLine("Purple", "\t" + t);
     }
 
     public static void debug(String text) {

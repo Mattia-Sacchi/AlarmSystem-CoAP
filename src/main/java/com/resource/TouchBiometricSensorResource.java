@@ -11,6 +11,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import com.google.gson.Gson;
 import com.objects.TouchBiometricSensor;
 import com.utils.CoreInterfaces;
+import com.utils.Log;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
@@ -23,9 +24,9 @@ public class TouchBiometricSensorResource extends CoapResource {
 
     public TouchBiometricSensorResource(String name, String deviceId) {
         super(name);
-        getAttributes().setTitle(OBJECT_TITLE);
         gson = new Gson();
-
+        getAttributes().setTitle(OBJECT_TITLE);
+        sensor = new TouchBiometricSensor();
         this.deviceId = deviceId;
 
         // Init
@@ -52,12 +53,46 @@ public class TouchBiometricSensorResource extends CoapResource {
     }
 
     @Override
+    public void handlePOST(CoapExchange exchange) {
+
+        try {
+            String payload = exchange.getRequestText().toString();
+            boolean result = sensor.addFingerPrint(payload);
+            if (result) {
+                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+                changed();
+                Log.success("Called");
+
+            } else
+
+                exchange.respond(ResponseCode.BAD_REQUEST);
+
+        } catch (Exception e) {
+            Log.failure("Called");
+            exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public void handlePUT(CoapExchange exchange) {
+        try {
+
+            exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+            changed();
+        } catch (Exception e) {
+            exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
     public void handleGET(CoapExchange exchange) {
         try {
+            String payload = exchange.toString();
+            Log.debug(payload);
 
             if (!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
                     || exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON)) {
-                exchange.respond(CoAP.ResponseCode.CONTENT, sensor.getBiometricData(),
+                exchange.respond(CoAP.ResponseCode.CONTENT, String.format("%b", sensor.checkBiometricData(payload)),
                         MediaTypeRegistry.TEXT_PLAIN);
                 return;
             }

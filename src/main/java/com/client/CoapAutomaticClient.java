@@ -1,10 +1,11 @@
 package com.client;
 
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.WebLink;
 import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -15,8 +16,10 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonNull;
 import com.utils.Log;
 import com.utils.SenMLPack;
+import com.utils.SenMLRecord;
 
 public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";
@@ -29,6 +32,8 @@ public class CoapAutomaticClient {
     private static String targetAlarmSwitchUri = null;
     private static String targetInfixSensorUri = null;
     private static String targetTouchBiometricSensorUri = null;
+    private static String testerDeviceId = "tester-device-000";
+    private static String testerDeviceName = "CoapAutomaticClient";
     private static Gson gson = new Gson();
 
     private static boolean validateTargetDevice(CoapClient client) {
@@ -41,7 +46,7 @@ public class CoapAutomaticClient {
 
             if (response == null) {
                 Log.error("No response", String.format("No response from %s", COAP_ENDPOINT));
-                // return false;
+                return false;
             }
 
             if (response.getOptions().getContentFormat() != MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
@@ -74,6 +79,7 @@ public class CoapAutomaticClient {
                         });
             });
 
+            // Check if any of the url is invalid -> return false
             boolean result = true;
             result = result && (targetAlarmControllerUri != null);
             result = result && (targetAlarmSwitchUri != null);
@@ -88,12 +94,62 @@ public class CoapAutomaticClient {
         }
     }
 
+    private static boolean createFingerprint(CoapClient client, String fingerprint) {
+        try {
+            Request request = new Request(Code.POST);
+            request.setURI(String.format("%s%s", COAP_ENDPOINT, targetTouchBiometricSensorUri));
+            request.setConfirmable(true);
+
+            // Making the formal request with SenML
+            SenMLPack pack = new SenMLPack();
+            SenMLRecord record = new SenMLRecord();
+            record.setBn(testerDeviceId);
+            record.setN(testerDeviceName);
+            record.setVs(fingerprint);
+            pack.add(record);
+
+            // Setting payload with additional check
+            String payload = gson.toJson(pack);
+
+            if (payload == gson.toJson(JsonNull.INSTANCE)) {
+                Log.error("Json Encoding failed");
+                return false;
+            }
+            request.setPayload(payload);
+
+            CoapResponse response = client.advanced(request);
+
+            return (response != null &&
+                    response.getCode().equals(CoAP.ResponseCode.CHANGED));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean checkFingerprint(CoapClient client, String fingerprint) {
+        try {
+            Request request = new Request(Code.PUT);
+            request.setURI(String.format("%s%s", COAP_ENDPOINT, targetTouchBiometricSensorUri));
+            request.setPayload(fingerprint);
+            request.setConfirmable(true);
+            CoapResponse response = client.advanced(request);
+
+            return (response != null &&
+                    response.getCode().equals(CoAP.ResponseCode.CHANGED));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
+        Log.operationResult(createFingerprint(client, "a"), "f");
+
     }
+
 }
 
 /*
