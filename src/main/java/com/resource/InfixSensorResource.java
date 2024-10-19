@@ -21,6 +21,10 @@ public class InfixSensorResource extends CoapResource {
     InfixSensor sensor;
     private String deviceId;
 
+    public static String getDefaultName() {
+        return "infix-sensor";
+    }
+
     public InfixSensorResource(String name, String deviceId) {
         super(name);
         getAttributes().setTitle(OBJECT_TITLE);

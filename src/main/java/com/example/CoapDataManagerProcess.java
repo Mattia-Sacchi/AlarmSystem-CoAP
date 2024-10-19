@@ -9,19 +9,26 @@ import com.utils.Log;
 
 public class CoapDataManagerProcess extends CoapServer {
 
+    AlarmControllerResource alarmController;
+    AlarmSwitchResource alarmSwitch;
+    InfixSensorResource infixSensor;
+    TouchBiometricSensorResource touchBiometricSensor;
+
     public CoapDataManagerProcess() {
         super();
         String deviceId = "alarm-001";
 
-        AlarmControllerResource alarmControllerResource = new AlarmControllerResource("alarm-controller", deviceId);
-        AlarmSwitchResource alarmSwitchResource = new AlarmSwitchResource("alarm-switch", deviceId);
-        InfixSensorResource infixSensorResource = new InfixSensorResource("infix-sensor", deviceId);
-        TouchBiometricSensorResource touchBiometricSensorResource = new TouchBiometricSensorResource(
-                "touch-biometric-sensor", deviceId);
-        this.add(alarmControllerResource);
-        this.add(alarmSwitchResource);
-        this.add(infixSensorResource);
-        this.add(touchBiometricSensorResource);
+        AlarmControllerResource alarmController = new AlarmControllerResource(AlarmControllerResource.getDefaultName(),
+                deviceId);
+        AlarmSwitchResource alarmSwitch = new AlarmSwitchResource(AlarmSwitchResource.getDefaultName(), deviceId);
+        InfixSensorResource infixSensor = new InfixSensorResource(InfixSensorResource.getDefaultName(), deviceId);
+        TouchBiometricSensorResource touchBiometricSensor = new TouchBiometricSensorResource(
+                TouchBiometricSensorResource.getDefaultName(), deviceId);
+
+        this.add(alarmController);
+        this.add(alarmSwitch);
+        this.add(infixSensor);
+        this.add(touchBiometricSensor);
     }
 
     public static void main(String[] args) throws Exception {

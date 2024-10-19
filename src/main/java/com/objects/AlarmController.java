@@ -1,21 +1,24 @@
 package com.objects;
 
+import com.utils.Log;
+
 public class AlarmController {
     boolean state;
 
-    public AlarmController()
-    {
+    public static final long EnterDelay = 30;
+    public static final long ExitDelay = 30;
+
+    public AlarmController() {
         state = false;
     }
 
-    public boolean getState()
-    {
+    public boolean getState() {
         return state;
     }
 
-    public void setState(boolean state)
-    {
-        this.state = state;
+    public void setState(boolean newState) {
+        state = newState;
+        Log.debug("Siren", state ? "Intrusion detected (On)" : "Off");
     }
 
 }

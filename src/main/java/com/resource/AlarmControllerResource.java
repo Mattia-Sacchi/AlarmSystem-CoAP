@@ -12,14 +12,22 @@ import com.utils.CoreInterfaces;
 public class AlarmControllerResource extends CoapResource {
     Gson gson;
     private static final String OBJECT_TITLE = "AlarmController";
-    AlarmController controller;
+    private static AlarmController controller;
     private String deviceId;
+
+    public static String getDefaultName() {
+        return "alarm-controller";
+    }
+
+    public AlarmController getControllerInstance() {
+        return controller;
+    }
 
     public AlarmControllerResource(String name, String deviceId) {
         super(name);
         getAttributes().setTitle(OBJECT_TITLE);
         gson = new Gson();
-
+        controller = new AlarmController();
         this.deviceId = deviceId;
 
         // Init

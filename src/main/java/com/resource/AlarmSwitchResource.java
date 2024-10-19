@@ -6,20 +6,28 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.google.gson.Gson;
-import com.objects.AlarmController;
+import com.objects.AlarmSwitch;
 import com.utils.CoreInterfaces;
 
 public class AlarmSwitchResource extends CoapResource {
     Gson gson;
     private static final String OBJECT_TITLE = "AlarmSwitch";
-    AlarmController controller;
+    private static AlarmSwitch alarmSwitch;
     private String deviceId;
+
+    public static String getDefaultName() {
+        return "alarm-switch";
+    }
+
+    public AlarmSwitch getAlarmSwitchInstance() {
+        return alarmSwitch;
+    }
 
     public AlarmSwitchResource(String name, String deviceId) {
         super(name);
         getAttributes().setTitle(OBJECT_TITLE);
         gson = new Gson();
-
+        alarmSwitch = new AlarmSwitch();
         this.deviceId = deviceId;
 
         // Init
@@ -33,7 +41,7 @@ public class AlarmSwitchResource extends CoapResource {
     @Override
     public void handlePOST(CoapExchange exchange) {
         try {
-            controller.setState(exchange.getRequestPayload().toString().equals("1"));
+            alarmSwitch.setState(exchange.getRequestPayload().toString().equals("1"));
             exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
             changed();
         } catch (Exception e) {

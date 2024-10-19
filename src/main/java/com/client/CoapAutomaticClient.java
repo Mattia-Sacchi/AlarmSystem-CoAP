@@ -189,7 +189,8 @@ public class CoapAutomaticClient {
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
-        Log.operationResult(createFingerprint(client, "aa"), "test");
+        Log.operationResult(createFingerprint(client, "aa"), "creating finger print");
+        Log.operationResult(checkFingerprint(client, "aa"), "checking finger print");
 
     }
 
