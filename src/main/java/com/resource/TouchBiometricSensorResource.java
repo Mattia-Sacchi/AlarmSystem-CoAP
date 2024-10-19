@@ -11,6 +11,8 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
+import com.example.CoapDataManagerProcess;
+import com.example.ResourceTypes;
 import com.google.gson.Gson;
 import com.objects.AlarmController;
 import com.objects.AlarmSwitch;
@@ -20,30 +22,20 @@ import com.utils.Log;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
-public class TouchBiometricSensorResource extends CoapResource {
+public class TouchBiometricSensorResource extends StandardCoapResource {
 
-    Gson gson;
     private static final String OBJECT_TITLE = "TouchBiometricSensor";
     TouchBiometricSensor sensor;
-    private String deviceId;
 
     public static String getDefaultName() {
         return "touch-biometric-sensor";
     }
 
-    public TouchBiometricSensorResource(String name, String deviceId) {
-        super(name);
-        gson = new Gson();
+    public TouchBiometricSensorResource(CoapDataManagerProcess dataManager, String name, String deviceId,
+            ResourceTypes type) {
+        super(dataManager, name, deviceId, type);
         getAttributes().setTitle(OBJECT_TITLE);
         sensor = new TouchBiometricSensor();
-        this.deviceId = deviceId;
-
-        // Init
-        getAttributes().addAttribute("rt", "com.resource.TouchBiometricSensor");
-        getAttributes().addAttribute("if", CoreInterfaces.CORE_S.getValue());
-        getAttributes().addAttribute("ct", Integer.toString((MediaTypeRegistry.APPLICATION_SENML_JSON)));
-        getAttributes().addAttribute("ct", Integer.toString(MediaTypeRegistry.TEXT_PLAIN));
-
     }
 
     private Optional<String> getJsonSenMlResponse() {
@@ -51,7 +43,7 @@ public class TouchBiometricSensorResource extends CoapResource {
 
             SenMLPack pack = new SenMLPack();
             SenMLRecord record = new SenMLRecord();
-            record.setBn(deviceId);
+            record.setBn(getDeviceId());
             record.setN(getName());
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));

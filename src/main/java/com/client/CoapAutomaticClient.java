@@ -19,6 +19,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
 
+import com.example.ResourceTypes;
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
 import com.utils.Log;
@@ -29,13 +30,7 @@ public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";
     private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.well-known/core";
 
-    enum ResourceTypes {
-        RT_ALARM_CONTROLLER,
-        RT_ALARM_SWITCH,
-        RT_INFIX_SENSOR,
-        RT_TOUCH_BIOMETRIC_SENSOR,
-
-    };
+    
 
     private static final Map<ResourceTypes, String> resourceTypes = Stream.of(
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, "com.resource.AlarmController"),

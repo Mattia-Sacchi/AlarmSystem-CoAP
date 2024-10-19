@@ -1,11 +1,14 @@
 package com.example;
 
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import com.resource.AlarmControllerResource;
 import com.resource.AlarmSwitchResource;
 import com.resource.InfixSensorResource;
+import com.resource.StandardCoapResource;
 import com.resource.TouchBiometricSensorResource;
 import com.utils.Log;
+import com.example.ResourceTypes;
 
 public class CoapDataManagerProcess extends CoapServer {
 
@@ -18,17 +21,43 @@ public class CoapDataManagerProcess extends CoapServer {
         super();
         String deviceId = "alarm-001";
 
-        AlarmControllerResource alarmController = new AlarmControllerResource(AlarmControllerResource.getDefaultName(),
-                deviceId);
-        AlarmSwitchResource alarmSwitch = new AlarmSwitchResource(AlarmSwitchResource.getDefaultName(), deviceId);
-        InfixSensorResource infixSensor = new InfixSensorResource(InfixSensorResource.getDefaultName(), deviceId);
-        TouchBiometricSensorResource touchBiometricSensor = new TouchBiometricSensorResource(
-                TouchBiometricSensorResource.getDefaultName(), deviceId);
+        alarmController = new AlarmControllerResource(this, AlarmControllerResource.getDefaultName(),
+                deviceId, ResourceTypes.RT_ALARM_CONTROLLER);
+        alarmSwitch = new AlarmSwitchResource(this, AlarmSwitchResource.getDefaultName(), deviceId,
+                ResourceTypes.RT_ALARM_SWITCH);
+        infixSensor = new InfixSensorResource(this, InfixSensorResource.getDefaultName(), deviceId,
+                ResourceTypes.RT_INFIX_SENSOR);
+        touchBiometricSensor = new TouchBiometricSensorResource(this,
+                TouchBiometricSensorResource.getDefaultName(), deviceId, ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR);
 
         this.add(alarmController);
         this.add(alarmSwitch);
         this.add(infixSensor);
         this.add(touchBiometricSensor);
+    }
+
+    public StandardCoapResource getInstance(ResourceTypes type) {
+        /*
+         * switch (type) {
+         * case RT_ALARM_CONTROLLER:
+         * return alarmController;
+         * break;
+         * case RT_ALARM_SWITCH:
+         * return alarmSwitch;
+         * break;
+         * case RT_INFIX_SENSOR:
+         * return infixSensor;
+         * break;
+         * case RT_TOUCH_BIOMETRIC_SENSOR:
+         * return touchBiometricSensor;
+         * break;
+         * 
+         * default:
+         * break;
+         * }
+         */
+        return new StandardCoapResource(null, null, null, type);
+
     }
 
     public static void main(String[] args) throws Exception {
