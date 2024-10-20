@@ -1,4 +1,4 @@
-package com.example;
+package com.utils;
 
 public enum ResourceTypes {
     RT_ALARM_CONTROLLER,

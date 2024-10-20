@@ -8,7 +8,7 @@ import com.resource.InfixSensorResource;
 import com.resource.StandardCoapResource;
 import com.resource.TouchBiometricSensorResource;
 import com.utils.Log;
-import com.example.ResourceTypes;
+import com.utils.ResourceTypes;
 
 public class CoapDataManagerProcess extends CoapServer {
 

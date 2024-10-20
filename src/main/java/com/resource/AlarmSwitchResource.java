@@ -1,23 +1,16 @@
 package com.resource;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.example.CoapDataManagerProcess;
-import com.example.ResourceTypes;
-import com.google.gson.Gson;
 import com.objects.AlarmSwitch;
-import com.utils.CoreInterfaces;
+import com.utils.ResourceTypes;
 
 public class AlarmSwitchResource extends StandardCoapResource {
     private static final String OBJECT_TITLE = "AlarmSwitch";
     private static AlarmSwitch alarmSwitch;
-
-    public static String getDefaultName() {
-        return "alarm-switch";
-    }
 
     public AlarmSwitch getAlarmSwitchInstance() {
         return alarmSwitch;

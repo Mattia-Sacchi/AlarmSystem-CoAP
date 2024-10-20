@@ -1,13 +1,12 @@
 package com.resource;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.example.CoapDataManagerProcess;
-import com.example.ResourceTypes;
 import com.objects.AlarmController;
+import com.utils.ResourceTypes;
 
 public class AlarmControllerResource extends StandardCoapResource {
     private static final String OBJECT_TITLE = "AlarmController";

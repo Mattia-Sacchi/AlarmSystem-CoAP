@@ -9,13 +9,13 @@ public class AlarmSwitch {
         state = false;
     }
 
+    public boolean getState() {
+        return state;
+    }
+
     public void setState(boolean newState) {
         state = newState;
         Log.debug("Alarm system", state ? "Armed (On)" : "Disarmed (Off)");
-    }
-
-    public boolean getState() {
-        return state;
     }
 
     public long getTimestamp() {

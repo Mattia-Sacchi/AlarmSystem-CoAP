@@ -5,20 +5,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.example.CoapDataManagerProcess;
-import com.example.ResourceTypes;
-import com.google.gson.Gson;
 import com.objects.AlarmController;
 import com.objects.AlarmSwitch;
 import com.objects.InfixSensor;
-import com.utils.CoreInterfaces;
+import com.utils.Constants;
 import com.utils.Log;
+import com.utils.ResourceTypes;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
@@ -26,10 +24,6 @@ public class InfixSensorResource extends StandardCoapResource {
 
     private static final String OBJECT_TITLE = "InfixSensor";
     InfixSensor sensor;
-
-    public static String getDefaultName() {
-        return "infix-sensor";
-    }
 
     public InfixSensorResource(CoapDataManagerProcess dataManager, String deviceId, ResourceTypes type) {
         super(dataManager, deviceId, type);
@@ -46,6 +40,8 @@ public class InfixSensorResource extends StandardCoapResource {
             record.setBn(getDeviceId());
             record.setN(getName());
             record.setVb(sensor.getState());
+            record.setT(sensor.getTimestamp());
+            record.setU("bit");
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));
 
@@ -104,7 +100,7 @@ public class InfixSensorResource extends StandardCoapResource {
 
             if (alarmSystemState) {
                 Log.debug("Turning on the siren",
-                        String.format("You have %d seconds to enter the fingerprint", AlarmController.EnterDelay));
+                        String.format("You have %l seconds to enter the fingerprint", Constants.ENTER_DELAY));
                 ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
                 Runnable task = () -> {
                     // I take a alarm system resource Instance
@@ -114,7 +110,7 @@ public class InfixSensorResource extends StandardCoapResource {
                         alarmController.setState(true);
                     }
                 };
-                ses.schedule(task, AlarmController.EnterDelay, TimeUnit.SECONDS);
+                ses.schedule(task, Constants.ENTER_DELAY, TimeUnit.SECONDS);
 
                 ses.shutdown();
                 exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);

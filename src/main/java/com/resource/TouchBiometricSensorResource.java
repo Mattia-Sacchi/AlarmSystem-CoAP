@@ -11,12 +11,12 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.example.CoapDataManagerProcess;
-import com.example.ResourceTypes;
 import com.objects.AlarmController;
 import com.objects.AlarmSwitch;
 import com.objects.TouchBiometricSensor;
 import com.utils.Constants;
 import com.utils.Log;
+import com.utils.ResourceTypes;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
@@ -40,6 +40,8 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             record.setBn(getDeviceId());
             record.setN(getName());
             record.setVs(currentFingerprint);
+            record.setT(sensor.getTimestamp());
+            record.setU("bit");
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));
 
@@ -48,7 +50,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
         }
     }
 
-    public boolean checkValidity(String fingerprint) {
+    private boolean checkValidity(String fingerprint) {
         try {
             if (!sensor.checkBiometricData(fingerprint)) {
                 return false;
@@ -85,18 +87,20 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             }
 
             // Ok now the cases with delay needed
-            if (!alarmSystemState) {
-                Log.debug("Arming the system",
-                        String.format("You have %d seconds to leave the house", Constants.EXIT_DELAY));
-                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-                Runnable task = () -> {
-                    alarmSwitch.setState(true);
-                };
-                ses.schedule(task, Constants.EXIT_DELAY, TimeUnit.SECONDS);
-
-                ses.shutdown();
-
+            if (alarmSystemState) {
+                return true;
             }
+
+            Log.debug("Arming the system",
+                    String.format("You have %d seconds to leave the house",
+                            5));
+
+            ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                alarmSwitch.setState(true);
+            };
+            ses.schedule(task, 5, TimeUnit.SECONDS);
+            ses.shutdown();
 
             return true;
         } catch (Exception e) {

@@ -8,17 +8,11 @@ import com.utils.Log;
 public class TouchBiometricSensor {
 
     ArrayList<String> validFingerPrints;
+    Random random;
 
     public TouchBiometricSensor() {
         validFingerPrints = new ArrayList<String>();
-    }
-
-    // Only for simulation purpose
-    public String measure() {
-        Random r = new Random();
-        final byte bytes[] = new byte[10];
-        r.nextBytes(bytes);
-        return bytes.toString();
+        random = new Random();
     }
 
     // if there's no fingerprints, print error and return
@@ -59,6 +53,13 @@ public class TouchBiometricSensor {
 
     public long getTimestamp() {
         return System.currentTimeMillis();
+    }
+
+    // Only for simulation purpose
+    public String measure() {
+        final byte bytes[] = new byte[10];
+        random.nextBytes(bytes);
+        return bytes.toString();
     }
 
 }

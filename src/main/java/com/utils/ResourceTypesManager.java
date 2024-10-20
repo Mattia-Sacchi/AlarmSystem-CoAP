@@ -1,4 +1,4 @@
-package com.example;
+package com.utils;
 
 import java.util.AbstractMap;
 import java.util.Map;

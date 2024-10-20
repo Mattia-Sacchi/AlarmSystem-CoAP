@@ -8,21 +8,25 @@ public class InfixSensor {
     Random random;
 
     public InfixSensor() {
-        random = new Random();
         state = false;
+        random = new Random();
     }
 
-    public void measure() {
-        this.state = random.nextBoolean();
-    }
-
-    public boolean getState()
-    {
+    public boolean getState() {
         return state;
+    }
+
+    // Only simulation
+    public void setState(boolean newState) {
+        state = newState;
     }
 
     public long getTimestamp() {
         return System.currentTimeMillis();
+    }
+
+    public void measure() {
+        this.state = random.nextBoolean();
     }
 
 }

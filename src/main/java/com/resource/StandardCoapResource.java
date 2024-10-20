@@ -4,10 +4,10 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 import com.example.CoapDataManagerProcess;
-import com.example.ResourceTypes;
-import com.example.ResourceTypesManager;
 import com.google.gson.Gson;
 import com.utils.CoreInterfaces;
+import com.utils.ResourceTypes;
+import com.utils.ResourceTypesManager;
 
 public class StandardCoapResource extends CoapResource {
 

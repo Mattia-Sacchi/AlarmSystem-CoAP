@@ -19,12 +19,12 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
 
-import com.example.ResourceTypes;
-import com.example.ResourceTypesManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
 import com.utils.Constants;
 import com.utils.Log;
+import com.utils.ResourceTypes;
+import com.utils.ResourceTypesManager;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
@@ -42,19 +42,19 @@ public class CoapAutomaticClient {
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR, ""))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    private String composeUriDefault(ResourceTypes type) {
+    private static String composeUriDefault(ResourceTypes type) {
         return composeUri(COAP_ENDPOINT, type);
     }
 
-    private String composeUri(String endpoint, ResourceTypes type) {
+    private static String composeUri(String endpoint, ResourceTypes type) {
         return composeUri(endpoint, uris.get(type));
     }
 
-    private String composeUri(String endpoint, String uri) {
+    private static String composeUri(String endpoint, String uri) {
         return String.format("%s%s", COAP_ENDPOINT, uri);
     }
 
-    private boolean validateTargetDevice(CoapClient client) {
+    private static boolean validateTargetDevice(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
             request.setURI(composeUri(COAP_ENDPOINT, RESOURCE_DISCOVERY_ENDPOINT));
@@ -108,7 +108,7 @@ public class CoapAutomaticClient {
         }
     }
 
-    private boolean createFingerprint(CoapClient client, String fingerprint) {
+    private static boolean createFingerprint(CoapClient client, String fingerprint) {
         try {
             Request request = new Request(Code.POST);
             request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
@@ -140,7 +140,7 @@ public class CoapAutomaticClient {
         }
     }
 
-    private boolean checkFingerprint(CoapClient client, String fingerprint) {
+    private static boolean checkFingerprint(CoapClient client, String fingerprint) {
         try {
             Request request = new Request(Code.PUT);
             request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
@@ -172,7 +172,7 @@ public class CoapAutomaticClient {
         }
     }
 
-    private String getFingerprint(CoapClient client) {
+    private static String getFingerprint(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
             request.setOptions(new OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
@@ -192,7 +192,7 @@ public class CoapAutomaticClient {
         }
     }
 
-    private boolean getInfixSensorValue(CoapClient client) {
+    private static boolean getInfixSensorValue(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
             request.setOptions(new OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
@@ -218,100 +218,16 @@ public class CoapAutomaticClient {
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
         Log.operationResult(createFingerprint(client, "aa"), "creating finger print");
+
         Log.operationResult(checkFingerprint(client, "aa"), "checking finger print");
+        Thread.sleep(1000);
+
+        Log.operationResult(getInfixSensorValue(client), "Infix sensor");
+
+        Thread.sleep(5 * 1000);
+
+        Log.operationResult(getInfixSensorValue(client), "Infix sensor");
 
     }
 
 }
-
-/*
- * private static boolean isCoffeAvaiable(CoapClient client) {
- * try {
- * Request request = new Request(Code.GET);
- * request.setOptions(new
- * OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
- * request.setURI(String.format(COAP_ENDPOINT, targetCaspulaUri));
- * request.setConfirmable(true);
- * CoapResponse response = client.advanced(request);
- * 
- * if (response == null)
- * return false;
- * 
- * String payload = response.getResponseText();
- * SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
- * return pack.get(0).getVb();
- * } catch (Exception e) {
- * return false;
- * }
- * }
- * 
- * private static boolean trigger(CoapClient client) {
- * try {
- * Request request = new Request(Code.POST);
- * request.setURI(String.format(COAP_ENDPOINT, targetActuatorUri));
- * request.setConfirmable(true);
- * CoapResponse response = client.advanced(request);
- * 
- * return (response != null &&
- * response.getCode().equals(CoAP.ResponseCode.CHANGED));
- * } catch (Exception e) {
- * return false;
- * }
- * }
- * 
- * private static boolean createCaspula(CoapClient client) {
- * try {
- * Request request = new Request(Code.POST);
- * request.setURI(String.format("%s%s", COAP_ENDPOINT, targetCaspulaUri));
- * System.out.println(String.format("%s%s", COAP_ENDPOINT, targetCaspulaUri));
- * request.setConfirmable(true);
- * System.out.println(Utils.prettyPrint(request));
- * CoapResponse response = client.advanced(request);
- * System.out.println(Utils.prettyPrint(response));
- * 
- * return (response != null &&
- * response.getCode().equals(CoAP.ResponseCode.CHANGED));
- * } catch (Exception e) {
- * return false;
- * }
- * }
- * 
- * private static boolean light(CoapClient client, String color, boolean state)
- * {
- * try {
- * Request request = new Request(Code.PUT);
- * request.setURI(String.format("coap://192.168.4.1:5683/light/").concat(color))
- * ;
- * request.setPayload(state ? "1" : "0");
- * request.setConfirmable(true);
- * 
- * CoapResponse response = client.advanced(request);
- * System.out.println(response.getCode());
- * 
- * return (response != null &&
- * response.getCode().equals(CoAP.ResponseCode.CHANGED));
- * } catch (Exception e) {
- * System.out.println(e.getMessage());
- * return false;
- * }
- * }
- * 
- * private static boolean trafficLight(CoapClient client) {
- * try {
- * Request request = new Request(Code.PUT);
- * request.setURI(String.format("coap://192.168.4.1:5683/trafficlight/"));
- * request.setPayload(String.format(
- * "{\"timings\":[10000,5000,6000],\"cmd\":2,\"freq\":350,\"which\":5}"));
- * request.setConfirmable(true);
- * 
- * CoapResponse response = client.advanced(request);
- * System.out.println(response.getCode());
- * 
- * return (response != null &&
- * response.getCode().equals(CoAP.ResponseCode.CHANGED));
- * } catch (Exception e) {
- * System.out.println(e.getMessage());
- * return false;
- * }
- * }
- */
