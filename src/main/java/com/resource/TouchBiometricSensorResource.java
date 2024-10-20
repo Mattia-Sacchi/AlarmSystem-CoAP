@@ -5,7 +5,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -13,11 +12,10 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import com.example.CoapDataManagerProcess;
 import com.example.ResourceTypes;
-import com.google.gson.Gson;
 import com.objects.AlarmController;
 import com.objects.AlarmSwitch;
 import com.objects.TouchBiometricSensor;
-import com.utils.CoreInterfaces;
+import com.utils.Constants;
 import com.utils.Log;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
@@ -26,10 +24,6 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
 
     private static final String OBJECT_TITLE = "TouchBiometricSensor";
     TouchBiometricSensor sensor;
-
-    public static String getDefaultName() {
-        return "touch-biometric-sensor";
-    }
 
     public TouchBiometricSensorResource(CoapDataManagerProcess dataManager, String deviceId,
             ResourceTypes type) {
@@ -93,12 +87,12 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             // Ok now the cases with delay needed
             if (!alarmSystemState) {
                 Log.debug("Arming the system",
-                        String.format("You have %d seconds to leave the house", AlarmController.ExitDelay));
+                        String.format("You have %d seconds to leave the house", Constants.EXIT_DELAY));
                 ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
                 Runnable task = () -> {
                     alarmSwitch.setState(true);
                 };
-                ses.schedule(task, AlarmController.ExitDelay, TimeUnit.SECONDS);
+                ses.schedule(task, Constants.EXIT_DELAY, TimeUnit.SECONDS);
 
                 ses.shutdown();
 

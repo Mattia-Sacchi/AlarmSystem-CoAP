@@ -23,6 +23,7 @@ import com.example.ResourceTypes;
 import com.example.ResourceTypesManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
+import com.utils.Constants;
 import com.utils.Log;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
@@ -30,6 +31,9 @@ import com.utils.SenMLRecord;
 public class CoapAutomaticClient {
     private static final String COAP_ENDPOINT = "coap://127.0.0.1:5683";
     private static final String RESOURCE_DISCOVERY_ENDPOINT = "/.well-known/core";
+    private static Gson gson = new Gson();
+    private static String testerDeviceId = "tester-device-000";
+    private static String testerDeviceName = "CoapAutomaticClient";
 
     private static final Map<ResourceTypes, String> uris = Stream.of(
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, ""),
@@ -38,23 +42,19 @@ public class CoapAutomaticClient {
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR, ""))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    private static String testerDeviceId = "tester-device-000";
-    private static String testerDeviceName = "CoapAutomaticClient";
-    private static Gson gson = new Gson();
-
-    private static String composeUriDefault(ResourceTypes type) {
+    private String composeUriDefault(ResourceTypes type) {
         return composeUri(COAP_ENDPOINT, type);
     }
 
-    private static String composeUri(String endpoint, ResourceTypes type) {
+    private String composeUri(String endpoint, ResourceTypes type) {
         return composeUri(endpoint, uris.get(type));
     }
 
-    private static String composeUri(String endpoint, String uri) {
+    private String composeUri(String endpoint, String uri) {
         return String.format("%s%s", COAP_ENDPOINT, uri);
     }
 
-    private static boolean validateTargetDevice(CoapClient client) {
+    private boolean validateTargetDevice(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
             request.setURI(composeUri(COAP_ENDPOINT, RESOURCE_DISCOVERY_ENDPOINT));
@@ -108,7 +108,7 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean createFingerprint(CoapClient client, String fingerprint) {
+    private boolean createFingerprint(CoapClient client, String fingerprint) {
         try {
             Request request = new Request(Code.POST);
             request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
@@ -140,7 +140,7 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean checkFingerprint(CoapClient client, String fingerprint) {
+    private boolean checkFingerprint(CoapClient client, String fingerprint) {
         try {
             Request request = new Request(Code.PUT);
             request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
@@ -172,19 +172,40 @@ public class CoapAutomaticClient {
         }
     }
 
-    private static boolean isCoffeAvaiable(CoapClient client) {
+    private String getFingerprint(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
             request.setOptions(new OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
-            request.setURI(String.format(COAP_ENDPOINT, targetCaspulaUri));
+            request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
             request.setConfirmable(true);
             CoapResponse response = client.advanced(request);
 
-            if (response == null)
-                return false;
+            String payload = response.getResponseText();
+            SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
+
+            if (response == null || pack.size() != 1)
+                return Constants.INVALID_FINGERPRINT;
+
+            return pack.get(0).getVs();
+        } catch (Exception e) {
+            return Constants.INVALID_FINGERPRINT;
+        }
+    }
+
+    private boolean getInfixSensorValue(CoapClient client) {
+        try {
+            Request request = new Request(Code.GET);
+            request.setOptions(new OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
+            request.setURI(composeUriDefault(ResourceTypes.RT_INFIX_SENSOR));
+            request.setConfirmable(true);
+            CoapResponse response = client.advanced(request);
 
             String payload = response.getResponseText();
             SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
+
+            if (response == null || pack.size() != 1)
+                return false;
+
             return pack.get(0).getVb();
         } catch (Exception e) {
             return false;
