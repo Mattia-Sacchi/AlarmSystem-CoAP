@@ -50,7 +50,7 @@ public class InfixSensorResource extends StandardCoapResource {
         }
     }
 
-    private boolean valueChanged(boolean state) {
+    private void valueChanged(boolean state) {
         // I take a alarm system resource Instance
         AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
         // I take a alarm siren resource Instance
@@ -72,17 +72,17 @@ public class InfixSensorResource extends StandardCoapResource {
                     "Disarming the system");
             // Try to return to a acceptable situation
             alarmController.setState(false);
-            return true;
+            return;
         }
 
         // Se il sistema d'allarme non é acceso non faccio niente
         if (!state || !alarmSystemState) {
-            return true;
+            return;
         }
 
         if (alarmSystemState) {
             Log.debug("Turning on the siren",
-                    String.format("You have %l seconds to enter the fingerprint", AlarmSwitch.ENTER_DELAY));
+                    String.format("You have %d seconds to enter the fingerprint", AlarmSwitch.ENTER_DELAY));
             ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
             Runnable task = () -> {
                 // I take a alarm system resource Instance
@@ -96,7 +96,7 @@ public class InfixSensorResource extends StandardCoapResource {
 
             ses.shutdown();
         }
-        return true;
+        return;
 
     }
 
@@ -137,6 +137,8 @@ public class InfixSensorResource extends StandardCoapResource {
                         MediaTypeRegistry.TEXT_PLAIN);
                 return;
             }
+
+            valueChanged(sensor.getState());
 
             Optional<String> senMlPayload = getJsonSenMlResponse();
             if (senMlPayload.isPresent()) {

@@ -101,6 +101,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             }
 
             return true;
+
         } catch (Exception e) {
             return false;
         }

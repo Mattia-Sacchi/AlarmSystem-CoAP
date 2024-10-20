@@ -121,6 +121,7 @@ public class CoapAutomaticClient {
             record.setBn(testerDeviceId);
             record.setN(testerDeviceName);
             record.setVs(fingerprint);
+            record.setT(System.currentTimeMillis());
             pack.add(record);
 
             // Setting payload with additional check
@@ -153,6 +154,7 @@ public class CoapAutomaticClient {
             record.setBn(testerDeviceId);
             record.setN(testerDeviceName);
             record.setVs(fingerprint);
+            record.setT(System.currentTimeMillis());
             pack.add(record);
 
             // Setting payload with additional check
@@ -213,21 +215,55 @@ public class CoapAutomaticClient {
         }
     }
 
+    private static boolean simulateInfixSensor(CoapClient client, boolean state) {
+        try {
+            Request request = new Request(Code.PUT);
+            request.setURI(composeUriDefault(ResourceTypes.RT_INFIX_SENSOR));
+            request.setConfirmable(true);
+
+            // Making the formal request with SenML
+            SenMLPack pack = new SenMLPack();
+            SenMLRecord record = new SenMLRecord();
+            record.setBn(testerDeviceId);
+            record.setN(testerDeviceName);
+            record.setVb(state);
+            record.setT(System.currentTimeMillis());
+            record.setU("bit");
+            pack.add(record);
+
+            // Setting payload with additional check
+            String payload = gson.toJson(pack);
+
+            if (payload == gson.toJson(JsonNull.INSTANCE)) {
+                Log.error("Json Encoding failed");
+                return false;
+            }
+            request.setPayload(payload);
+
+            CoapResponse response = client.advanced(request);
+
+            return (response != null &&
+                    response.getCode().equals(CoAP.ResponseCode.CHANGED));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
-        Log.operationResult(createFingerprint(client, "aa"), "creating finger print");
+        Log.operationResult(createFingerprint(client, "aa"), "creating fingerprint");
 
         Log.operationResult(checkFingerprint(client, "aa"), "checking finger print");
         Thread.sleep(1000);
 
-        Log.operationResult(getInfixSensorValue(client), "Infix sensor");
+        Log.operationResult(simulateInfixSensor(client, true), "Infix sensor");
 
         Thread.sleep(5 * 1000);
 
-        Log.operationResult(getInfixSensorValue(client), "Infix sensor");
+        Log.operationResult(simulateInfixSensor(client, true), "Infix sensor");
 
     }
 
