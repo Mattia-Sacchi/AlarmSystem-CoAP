@@ -38,18 +38,75 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
         sensor = new TouchBiometricSensor();
     }
 
-    private Optional<String> getJsonSenMlResponse() {
+    private Optional<String> getJsonSenMlResponse(String currentFingerprint) {
         try {
 
             SenMLPack pack = new SenMLPack();
             SenMLRecord record = new SenMLRecord();
             record.setBn(getDeviceId());
             record.setN(getName());
+            record.setVs(currentFingerprint);
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));
 
         } catch (Exception e) {
             return Optional.empty();
+        }
+    }
+
+    public boolean checkValidity(String fingerprint) {
+        try {
+            if (!sensor.checkBiometricData(fingerprint)) {
+                return false;
+            }
+
+            // I take a alarm system resource Instance
+            AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
+            // I take a alarm siren resource Instance
+            AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
+                    ResourceTypes.RT_ALARM_CONTROLLER));
+
+            // I take a alarm system Instance
+            AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
+            // I take a alarm siren Instance
+            AlarmController alarmController = alarmControllerRes.getControllerInstance();
+
+            // I take the current state of the system
+            boolean alarmSystemState = alarmSwitch.getState();
+            boolean alarmSirenState = alarmController.getState();
+
+            // Check for errors (implausibility)
+            if (alarmSirenState && !alarmSystemState) {
+                Log.error("Implausibility", "The system isn't armed while the siren is running?",
+                        "Disarming the system");
+                // Try to return to a acceptable situation
+                alarmController.setState(false);
+                return true;
+            }
+
+            if (alarmSirenState && alarmSystemState) {
+                alarmController.setState(false);
+                alarmSwitch.setState(false);
+                return true;
+            }
+
+            // Ok now the cases with delay needed
+            if (!alarmSystemState) {
+                Log.debug("Arming the system",
+                        String.format("You have %d seconds to leave the house", AlarmController.ExitDelay));
+                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+                Runnable task = () -> {
+                    alarmSwitch.setState(true);
+                };
+                ses.schedule(task, AlarmController.ExitDelay, TimeUnit.SECONDS);
+
+                ses.shutdown();
+
+            }
+
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -91,59 +148,39 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
 
             String fingerprint = senMLPack.get(0).getVs();
 
-            if (!sensor.checkBiometricData(fingerprint)) {
-                exchange.respond(ResponseCode.UNAUTHORIZED);
-                return;
-            }
-
-            // I take a alarm system resource Instance
-            AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
-            // I take a alarm siren resource Instance
-            AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
-                    ResourceTypes.RT_ALARM_CONTROLLER));
-
-            // I take a alarm system Instance
-            AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
-            // I take a alarm siren Instance
-            AlarmController alarmController = alarmControllerRes.getControllerInstance();
-
-            // I take the current state of the system
-            boolean alarmSystemState = alarmSwitch.getState();
-            boolean alarmSirenState = alarmController.getState();
-
-            // Check for errors (implausibility)
-            if (alarmSirenState && !alarmSystemState) {
-                Log.error("Implausibility", "The system isn't armed while the siren is running?",
-                        "Disarming the system");
-                // Try to return to a acceptable situation
-                alarmController.setState(false);
+            if (checkValidity(fingerprint)) {
                 exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+                changed();
+            } else
+                exchange.respond(ResponseCode.UNAUTHORIZED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+
+        } catch (Exception e) {
+            exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public void handleGET(CoapExchange exchange) {
+        try {
+
+            String fingerprint = sensor.measure();
+
+            if (!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
+                    || exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON)) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, fingerprint,
+                        MediaTypeRegistry.TEXT_PLAIN);
                 return;
             }
 
-            if (alarmSirenState && alarmSystemState) {
-                alarmController.setState(false);
-                alarmSwitch.setState(false);
-                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
-                return;
+            checkValidity(fingerprint);
+
+            Optional<String> senMlPayload = getJsonSenMlResponse(fingerprint);
+            if (senMlPayload.isPresent()) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, senMlPayload.get(),
+                        MediaTypeRegistry.APPLICATION_SENML_JSON);
+            } else {
+                exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
             }
-
-            // Ok now the cases with delay needed
-            if (!alarmSystemState) {
-                Log.debug("Arming the system",
-                        String.format("You have %d seconds to leave the house", AlarmController.ExitDelay));
-                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-                Runnable task = () -> {
-                    alarmSwitch.setState(true);
-                };
-                ses.schedule(task, AlarmController.ExitDelay, TimeUnit.SECONDS);
-
-                ses.shutdown();
-
-            }
-
-            exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
-            changed();
 
         } catch (Exception e) {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);

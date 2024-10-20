@@ -1,6 +1,7 @@
 package com.objects;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.utils.Log;
 
@@ -10,6 +11,14 @@ public class TouchBiometricSensor {
 
     public TouchBiometricSensor() {
         validFingerPrints = new ArrayList<String>();
+    }
+
+    // Only for simulation purpose
+    public String measure() {
+        Random r = new Random();
+        final byte bytes[] = new byte[10];
+        r.nextBytes(bytes);
+        return bytes.toString();
     }
 
     // if there's no fingerprints, print error and return

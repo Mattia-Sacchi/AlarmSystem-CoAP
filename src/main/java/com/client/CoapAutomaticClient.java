@@ -172,6 +172,25 @@ public class CoapAutomaticClient {
         }
     }
 
+    private static boolean isCoffeAvaiable(CoapClient client) {
+        try {
+            Request request = new Request(Code.GET);
+            request.setOptions(new OptionSet().setAccept(MediaTypeRegistry.APPLICATION_SENML_JSON));
+            request.setURI(String.format(COAP_ENDPOINT, targetCaspulaUri));
+            request.setConfirmable(true);
+            CoapResponse response = client.advanced(request);
+
+            if (response == null)
+                return false;
+
+            String payload = response.getResponseText();
+            SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
+            return pack.get(0).getVb();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 

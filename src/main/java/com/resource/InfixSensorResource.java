@@ -1,6 +1,9 @@
 package com.resource;
 
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
@@ -11,8 +14,11 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import com.example.CoapDataManagerProcess;
 import com.example.ResourceTypes;
 import com.google.gson.Gson;
+import com.objects.AlarmController;
+import com.objects.AlarmSwitch;
 import com.objects.InfixSensor;
 import com.utils.CoreInterfaces;
+import com.utils.Log;
 import com.utils.SenMLPack;
 import com.utils.SenMLRecord;
 
@@ -39,6 +45,7 @@ public class InfixSensorResource extends StandardCoapResource {
             SenMLRecord record = new SenMLRecord();
             record.setBn(getDeviceId());
             record.setN(getName());
+            record.setVb(sensor.getState());
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));
 
@@ -47,9 +54,86 @@ public class InfixSensorResource extends StandardCoapResource {
         }
     }
 
+    // Only simulation
+    @Override
+    public void handlePUT(CoapExchange exchange) {
+        try {
+            SenMLPack senMLPack = gson.fromJson(exchange.getRequestText(), SenMLPack.class);
+
+            // First condition the size must be one (One check at a time)
+            if (senMLPack.size() != 1) {
+                exchange.respond(ResponseCode.BAD_REQUEST);
+                return;
+            }
+
+            // I take the simulated value (only for debug)
+            boolean newState = senMLPack.get(0).getVb();
+            sensor.setState(newState);
+
+            // I take a alarm system resource Instance
+            AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
+            // I take a alarm siren resource Instance
+            AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
+                    ResourceTypes.RT_ALARM_CONTROLLER));
+
+            // I take a alarm system Instance
+            AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
+            // I take a alarm siren Instance
+            AlarmController alarmController = alarmControllerRes.getControllerInstance();
+
+            // I take the current state of the system
+            boolean alarmSystemState = alarmSwitch.getState();
+            boolean alarmSirenState = alarmController.getState();
+
+            // Check for errors (implausibility)
+            if (alarmSirenState && !alarmSystemState) {
+                Log.error("Implausibility", "The system isn't armed while the siren is running?",
+                        "Disarming the system");
+                // Try to return to a acceptable situation
+                alarmController.setState(false);
+                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+                return;
+            }
+
+            // Se il sistema d'allarme non é acceso non faccio niente
+            if (!newState || !alarmSystemState) {
+                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+                changed();
+                return;
+            }
+
+            if (alarmSystemState) {
+                Log.debug("Turning on the siren",
+                        String.format("You have %d seconds to enter the fingerprint", AlarmController.EnterDelay));
+                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+                Runnable task = () -> {
+                    // I take a alarm system resource Instance
+                    boolean actualSystemState = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH))
+                            .getAlarmSwitchInstance().getState();
+                    if (actualSystemState) {
+                        alarmController.setState(true);
+                    }
+                };
+                ses.schedule(task, AlarmController.EnterDelay, TimeUnit.SECONDS);
+
+                ses.shutdown();
+                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+                return;
+            }
+
+            exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
+            changed();
+
+        } catch (Exception e) {
+            exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @Override
     public void handleGET(CoapExchange exchange) {
         try {
+
+            sensor.measure();
 
             if (!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
                     || exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON)) {
@@ -59,11 +143,12 @@ public class InfixSensorResource extends StandardCoapResource {
             }
 
             Optional<String> senMlPayload = getJsonSenMlResponse();
-            if (senMlPayload.isPresent())
+            if (senMlPayload.isPresent()) {
                 exchange.respond(CoAP.ResponseCode.CONTENT, senMlPayload.get(),
                         MediaTypeRegistry.APPLICATION_SENML_JSON);
-            else
+            } else {
                 exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+            }
 
         } catch (Exception e) {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
