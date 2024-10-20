@@ -34,6 +34,7 @@ public class CoapAutomaticClient {
     private static Gson gson = new Gson();
     private static String testerDeviceId = "tester-device-000";
     private static String testerDeviceName = "CoapAutomaticClient";
+    public static final String INVALID_FINGERPRINT = "";
 
     private static final Map<ResourceTypes, String> uris = Stream.of(
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, ""),
@@ -184,11 +185,11 @@ public class CoapAutomaticClient {
             SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
 
             if (response == null || pack.size() != 1)
-                return Constants.INVALID_FINGERPRINT;
+                return INVALID_FINGERPRINT;
 
             return pack.get(0).getVs();
         } catch (Exception e) {
-            return Constants.INVALID_FINGERPRINT;
+            return INVALID_FINGERPRINT;
         }
     }
 

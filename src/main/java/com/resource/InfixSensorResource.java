@@ -50,6 +50,56 @@ public class InfixSensorResource extends StandardCoapResource {
         }
     }
 
+    private boolean valueChanged(boolean state) {
+        // I take a alarm system resource Instance
+        AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
+        // I take a alarm siren resource Instance
+        AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
+                ResourceTypes.RT_ALARM_CONTROLLER));
+
+        // I take a alarm system Instance
+        AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
+        // I take a alarm siren Instance
+        AlarmController alarmController = alarmControllerRes.getControllerInstance();
+
+        // I take the current state of the system
+        boolean alarmSystemState = alarmSwitch.getState();
+        boolean alarmSirenState = alarmController.getState();
+
+        // Check for errors (implausibility)
+        if (alarmSirenState && !alarmSystemState) {
+            Log.error("Implausibility", "The system isn't armed while the siren is running?",
+                    "Disarming the system");
+            // Try to return to a acceptable situation
+            alarmController.setState(false);
+            return true;
+        }
+
+        // Se il sistema d'allarme non é acceso non faccio niente
+        if (!state || !alarmSystemState) {
+            return true;
+        }
+
+        if (alarmSystemState) {
+            Log.debug("Turning on the siren",
+                    String.format("You have %l seconds to enter the fingerprint", AlarmSwitch.ENTER_DELAY));
+            ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                // I take a alarm system resource Instance
+                boolean actualSystemState = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH))
+                        .getAlarmSwitchInstance().getState();
+                if (actualSystemState) {
+                    alarmController.setState(true);
+                }
+            };
+            ses.schedule(task, AlarmSwitch.ENTER_DELAY, TimeUnit.SECONDS);
+
+            ses.shutdown();
+        }
+        return true;
+
+    }
+
     // Only simulation
     @Override
     public void handlePUT(CoapExchange exchange) {
@@ -66,57 +116,7 @@ public class InfixSensorResource extends StandardCoapResource {
             boolean newState = senMLPack.get(0).getVb();
             sensor.setState(newState);
 
-            // I take a alarm system resource Instance
-            AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
-            // I take a alarm siren resource Instance
-            AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
-                    ResourceTypes.RT_ALARM_CONTROLLER));
-
-            // I take a alarm system Instance
-            AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
-            // I take a alarm siren Instance
-            AlarmController alarmController = alarmControllerRes.getControllerInstance();
-
-            // I take the current state of the system
-            boolean alarmSystemState = alarmSwitch.getState();
-            boolean alarmSirenState = alarmController.getState();
-
-            // Check for errors (implausibility)
-            if (alarmSirenState && !alarmSystemState) {
-                Log.error("Implausibility", "The system isn't armed while the siren is running?",
-                        "Disarming the system");
-                // Try to return to a acceptable situation
-                alarmController.setState(false);
-                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
-                return;
-            }
-
-            // Se il sistema d'allarme non é acceso non faccio niente
-            if (!newState || !alarmSystemState) {
-                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
-                changed();
-                return;
-            }
-
-            if (alarmSystemState) {
-                Log.debug("Turning on the siren",
-                        String.format("You have %l seconds to enter the fingerprint", Constants.ENTER_DELAY));
-                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-                Runnable task = () -> {
-                    // I take a alarm system resource Instance
-                    boolean actualSystemState = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH))
-                            .getAlarmSwitchInstance().getState();
-                    if (actualSystemState) {
-                        alarmController.setState(true);
-                    }
-                };
-                ses.schedule(task, Constants.ENTER_DELAY, TimeUnit.SECONDS);
-
-                ses.shutdown();
-                exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
-                return;
-            }
-
+            valueChanged(newState);
             exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
             changed();
 

@@ -87,20 +87,18 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             }
 
             // Ok now the cases with delay needed
-            if (alarmSystemState) {
-                return true;
+            if (!alarmSystemState) {
+                Log.debug("Arming the system",
+                        String.format("You have %d seconds to leave the house",
+                                AlarmSwitch.EXIT_DELAY));
+
+                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+                Runnable task = () -> {
+                    alarmSwitch.setState(true);
+                };
+                ses.schedule(task, AlarmSwitch.EXIT_DELAY, TimeUnit.SECONDS);
+                ses.shutdown();
             }
-
-            Log.debug("Arming the system",
-                    String.format("You have %d seconds to leave the house",
-                            5));
-
-            ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-            Runnable task = () -> {
-                alarmSwitch.setState(true);
-            };
-            ses.schedule(task, 5, TimeUnit.SECONDS);
-            ses.shutdown();
 
             return true;
         } catch (Exception e) {
