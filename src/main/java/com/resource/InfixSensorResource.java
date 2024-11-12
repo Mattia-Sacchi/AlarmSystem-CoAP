@@ -80,7 +80,7 @@ public class InfixSensorResource extends StandardCoapResource {
             return;
         }
 
-        if (alarmSystemState) {
+        if (alarmSystemState && !alarmSirenState) {
             Log.debug("Turning on the siren",
                     String.format("You have %d seconds to enter the fingerprint", AlarmSwitch.ENTER_DELAY));
             ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
