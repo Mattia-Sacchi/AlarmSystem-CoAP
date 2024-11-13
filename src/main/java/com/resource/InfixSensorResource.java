@@ -14,7 +14,6 @@ import com.example.CoapDataManagerProcess;
 import com.objects.AlarmController;
 import com.objects.AlarmSwitch;
 import com.objects.InfixSensor;
-import com.utils.Constants;
 import com.utils.Log;
 import com.utils.ResourceTypes;
 import com.utils.SenMLPack;
