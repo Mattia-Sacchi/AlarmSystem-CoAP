@@ -1,29 +1,22 @@
 package com.objects;
-
-import java.util.ArrayList;
 import java.util.Random;
-
-import com.utils.Log;
 
 public class TouchBiometricSensor {
 
-    ArrayList<String> validFingerPrints;
     Random random;
-
+    
     public TouchBiometricSensor() {
-        validFingerPrints = new ArrayList<String>();
         random = new Random();
     }
 
-    // if there's no fingerprints, print error and return
-    private boolean checkValidity() {
-        boolean result = validFingerPrints.isEmpty();
-        if (result)
-            Log.error("Operation Failed", "Touch Biometric Sensor, not Initialized");
-        return result;
-
+    public static String getValidFingerPrint() {
+        // Unique valid fingerprint
+        return "SystemOwnerFingerprint00";
     }
 
+    
+    /*
+    // Before the system was working with a ArrayList of fingerprints
     public boolean addFingerPrint(String bioData) {
         if (validFingerPrints.contains(bioData)) {
             Log.error("Failed to add finger print:", bioData, "Already present in database");
@@ -42,12 +35,10 @@ public class TouchBiometricSensor {
             return false;
         }
         return false;
-    }
+    }*/
 
     public boolean checkBiometricData(String bioData) {
-        if (checkValidity())
-            return false;
-        return validFingerPrints.contains(bioData);
+        return getValidFingerPrint().equals(bioData);
 
     }
 
@@ -57,9 +48,12 @@ public class TouchBiometricSensor {
 
     // Only for simulation purpose
     public String measure() {
-        final byte bytes[] = new byte[10];
-        random.nextBytes(bytes);
-        return bytes.toString();
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < 10; i++){
+            sb.append(Character.toChars(random.nextInt(97, 122)));
+        }
+        return sb.toString();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.client;
 
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Set;
@@ -16,9 +17,11 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
+import org.eclipse.californium.elements.exception.ConnectorException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonSyntaxException;
 import com.utils.Log;
 import com.utils.ResourceTypes;
 import com.utils.ResourceTypesManager;
@@ -32,6 +35,7 @@ public class CoapAutomaticClient {
     private static String testerDeviceId = "tester-device-000";
     private static String testerDeviceName = "CoapAutomaticClient";
     public static final String INVALID_FINGERPRINT = "";
+    private static int intrusionCount = 0;
 
     private static final Map<ResourceTypes, String> uris = Stream.of(
             new AbstractMap.SimpleEntry<>(ResourceTypes.RT_ALARM_CONTROLLER, ""),
@@ -183,11 +187,11 @@ public class CoapAutomaticClient {
             String payload = response.getResponseText();
             SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
 
-            if (response == null || pack.size() != 1)
+            if (pack.size() != 1)
                 return INVALID_FINGERPRINT;
 
             return pack.get(0).getVs();
-        } catch (Exception e) {
+        } catch (JsonSyntaxException | IOException | ConnectorException e) {
             return INVALID_FINGERPRINT;
         }
     }
@@ -203,64 +207,79 @@ public class CoapAutomaticClient {
             String payload = response.getResponseText();
             SenMLPack pack = gson.fromJson(payload, SenMLPack.class);
 
-            if (response == null || pack.size() != 1)
+            if (pack.size() != 1)
                 return false;
 
             return pack.get(0).getVb();
-        } catch (Exception e) {
+        } catch (JsonSyntaxException | IOException | ConnectorException e) {
             return false;
         }
     }
 
-    private static boolean simulateInfixSensor(CoapClient client, boolean state) {
-        try {
-            Request request = new Request(Code.PUT);
-            request.setURI(composeUriDefault(ResourceTypes.RT_INFIX_SENSOR));
-            request.setConfirmable(true);
-
-            // Making the formal request with SenML
-            SenMLPack pack = new SenMLPack();
-            SenMLRecord record = new SenMLRecord();
-            record.setBn(testerDeviceId);
-            record.setN(testerDeviceName);
-            record.setVb(state);
-            record.setT(System.currentTimeMillis());
-            record.setU("bit");
-            pack.add(record);
-
-            // Setting payload with additional check
-            String payload = gson.toJson(pack);
-
-            if (payload == gson.toJson(JsonNull.INSTANCE)) {
-                Log.error("Json Encoding failed");
-                return false;
-            }
-            request.setPayload(payload);
-
-            CoapResponse response = client.advanced(request);
-
-            return (response != null &&
-                    response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
-            return false;
-        }
+    public static void testWrongFingerprint(CoapClient client)
+    {
+        Log.operationResult(checkFingerprint(client, "WrongFingerprint"), "checking fingerprint");
+        Log.debug("GET Fingerprint " ,getFingerprint(client) );
     }
+
+    public static void testIntrusions(CoapClient client, int times)
+    {
+        for(int i = 0 ; i < times; i++)
+            Log.operationResult(getInfixSensorValue(client), String.format("Infix sensor test intrusion %d", ++intrusionCount));
+        
+        
+    }
+
+    public static void testValidFingerprint(CoapClient client, String message)
+    {
+        Log.operationResult(checkFingerprint(client, "SystemOwnerFingerprint00"), message);
+    }
+
+
 
     public static void main(String[] args) throws Exception {
         CoapClient client = new CoapClient();
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
-        Log.operationResult(createFingerprint(client, "aa"), "creating fingerprint");
+        testWrongFingerprint(client);
 
-        Log.operationResult(checkFingerprint(client, "aa"), "checking finger print");
+        // Checking that the user doesn't try to turn on the system multiple times.
+
+        testValidFingerprint(client, "checking fingerprint first time");
         Thread.sleep(1000);
+        testValidFingerprint(client, "checking fingerprint second time");
 
-        Log.operationResult(simulateInfixSensor(client, true), "Infix sensor");
 
-        Thread.sleep(5 * 1000);
 
-        Log.operationResult(simulateInfixSensor(client, true), "Infix sensor");
+        // I wait for the system to turn on in order to test a intrusion.
+        Thread.sleep(5000);
+
+        testIntrusions(client,4);
+        
+        
+        // Test if I can stop the alarm with the fingerprint after a intrusion, before the siren goes on.
+        Thread.sleep(1000);
+        testValidFingerprint(client, "checking fingerprint third time");
+
+
+        // Test the intrusion with the system offs
+
+        testIntrusions(client,4);
+
+
+        // Test a real intrusion
+        testValidFingerprint(client, "checking fingerprint fourth time");
+
+        Thread.sleep(6000);
+
+        testIntrusions(client, 4);
+
+        // Test if I can stop the intrusion with a fingerprint while the system is active
+
+        Thread.sleep(6000);
+
+        testValidFingerprint(client, "checking fingerprint fifth time");
 
     }
 

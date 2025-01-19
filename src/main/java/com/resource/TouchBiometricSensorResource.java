@@ -22,13 +22,14 @@ import com.utils.SenMLRecord;
 public class TouchBiometricSensorResource extends StandardCoapResource {
 
     private static final String OBJECT_TITLE = "TouchBiometricSensor";
-    TouchBiometricSensor sensor;
+    TouchBiometricSensor m_sensor;
+    private boolean m_stateChange = false;
 
     public TouchBiometricSensorResource(CoapDataManagerProcess dataManager, String deviceId,
             ResourceTypes type) {
         super(dataManager, deviceId, type);
         getAttributes().setTitle(OBJECT_TITLE);
-        sensor = new TouchBiometricSensor();
+        m_sensor = new TouchBiometricSensor();
     }
 
     private Optional<String> getJsonSenMlResponse(String currentFingerprint) {
@@ -39,7 +40,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             record.setBn(getDeviceId());
             record.setN(getName());
             record.setVs(currentFingerprint);
-            record.setT(sensor.getTimestamp());
+            record.setT(m_sensor.getTimestamp());
             record.setU("bit");
             pack.add(record);
             return Optional.of(this.gson.toJson(pack));
@@ -49,9 +50,17 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
         }
     }
 
-    private boolean checkValidity(String fingerprint) {
+    void scheduledTask()
+    {
+        AlarmSwitch alarmSwitch = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH)).getInstance();
+        // Reset state change in order to recover state and work again
+        m_stateChange = false;
+        alarmSwitch.setState(true);
+    }
+
+    private boolean checkFingerprint(String fingerprint) {
         try {
-            if (!sensor.checkBiometricData(fingerprint)) {
+            if (!m_sensor.checkBiometricData(fingerprint)) {
                 return false;
             }
 
@@ -87,16 +96,26 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
 
             // Ok now the cases with delay needed
             if (!alarmSystemState) {
+                if(m_stateChange)
+                {
+                    Log.error("Already doing that","The system is already turning on");
+                    return false;
+                }
+
                 Log.debug("Arming the system",
                         String.format("You have %d seconds to leave the house",
                                 AlarmSwitch.EXIT_DELAY));
 
+                m_stateChange = true;
+
                 ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-                Runnable task = () -> {
-                    alarmSwitch.setState(true);
-                };
+                Runnable task = () -> scheduledTask();
                 ses.schedule(task, AlarmSwitch.EXIT_DELAY, TimeUnit.SECONDS);
                 ses.shutdown();
+            }
+            else
+            {
+                alarmSwitch.setState(false);
             }
 
             return true;
@@ -105,7 +124,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
             return false;
         }
     }
-
+    /*
     @Override
     public void handlePOST(CoapExchange exchange) {
 
@@ -129,8 +148,9 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
         } catch (Exception e) {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }
-    }
+    }*/
 
+    // Just for debug
     @Override
     public void handlePUT(CoapExchange exchange) {
         try {
@@ -144,7 +164,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
 
             String fingerprint = senMLPack.get(0).getVs();
 
-            if (checkValidity(fingerprint)) {
+            if (checkFingerprint(fingerprint)) {
                 exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
                 changed();
             } else
@@ -159,7 +179,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
     public void handleGET(CoapExchange exchange) {
         try {
 
-            String fingerprint = sensor.measure();
+            String fingerprint = m_sensor.measure();
 
             if (!(exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_SENML_JSON
                     || exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON)) {
@@ -168,7 +188,7 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
                 return;
             }
 
-            checkValidity(fingerprint);
+            checkFingerprint(fingerprint);
 
             Optional<String> senMlPayload = getJsonSenMlResponse(fingerprint);
             if (senMlPayload.isPresent()) {

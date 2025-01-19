@@ -50,6 +50,17 @@ public class InfixSensorResource extends StandardCoapResource {
         }
     }
 
+    void scheduledTask()
+    {
+        boolean actualSystemState = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH))
+                        .getInstance().getState();
+        AlarmController siren = ((AlarmControllerResource) getInstance(
+            ResourceTypes.RT_ALARM_CONTROLLER)).getInstance();
+        if (actualSystemState) {
+            siren.setState(true);
+        }
+    }
+
     private void valueChanged(boolean state) {
         // I get a alarm system resource Instance
         AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
@@ -84,14 +95,7 @@ public class InfixSensorResource extends StandardCoapResource {
             Log.debug("Turning on the siren",
                     String.format("You have %d seconds to enter the fingerprint", AlarmSwitch.ENTER_DELAY));
             ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-            Runnable task = () -> {
-
-                boolean actualSystemState = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH))
-                        .getInstance().getState();
-                if (actualSystemState) {
-                    alarmController.setState(true);
-                }
-            };
+            Runnable task = () -> scheduledTask();
             ses.schedule(task, AlarmSwitch.ENTER_DELAY, TimeUnit.SECONDS);
 
             ses.shutdown();
