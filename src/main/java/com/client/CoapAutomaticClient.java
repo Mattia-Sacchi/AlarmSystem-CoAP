@@ -56,6 +56,8 @@ public class CoapAutomaticClient {
         return String.format("%s%s", COAP_ENDPOINT, uri);
     }
 
+    
+
     private static boolean validateTargetDevice(CoapClient client) {
         try {
             Request request = new Request(Code.GET);
@@ -104,13 +106,13 @@ public class CoapAutomaticClient {
 
             return result;
 
-        } catch (Exception e) {
+        } catch (IOException | ConnectorException e) {
 
             return false;
         }
     }
 
-    private static boolean createFingerprint(CoapClient client, String fingerprint) {
+    /*private static boolean createFingerprint(CoapClient client, String fingerprint) {
         try {
             Request request = new Request(Code.POST);
             request.setURI(composeUriDefault(ResourceTypes.RT_TOUCH_BIOMETRIC_SENSOR));
@@ -128,7 +130,7 @@ public class CoapAutomaticClient {
             // Setting payload with additional check
             String payload = gson.toJson(pack);
 
-            if (payload == gson.toJson(JsonNull.INSTANCE)) {
+            if (payload.equals(gson.toJson(JsonNull.INSTANCE))) {
                 Log.error("Json Encoding failed");
                 return false;
             }
@@ -138,7 +140,41 @@ public class CoapAutomaticClient {
 
             return (response != null &&
                     response.getCode().equals(CoAP.ResponseCode.CREATED));
-        } catch (Exception e) {
+        } catch (IOException | ConnectorException e) {
+            return false;
+        }
+    }*/
+
+    private static boolean setAlarm(CoapClient client, boolean state) {
+        try {
+            Request request = new Request(Code.PUT);
+            request.setURI(composeUriDefault(ResourceTypes.RT_ALARM_SWITCH));
+            request.setPayload(String.format(state ? "1" : "0"));
+            request.setConfirmable(true);
+
+            CoapResponse response = client.advanced(request);
+            System.out.println(response.getCode());
+
+            return (response.getCode().equals(CoAP.ResponseCode.CHANGED));
+        } catch (IOException | ConnectorException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean setSiren(CoapClient client, boolean state) {
+        try {
+            Request request = new Request(Code.PUT);
+            request.setURI(composeUriDefault(ResourceTypes.RT_ALARM_CONTROLLER));
+            request.setPayload(String.format(state ? "1" : "0"));
+            request.setConfirmable(true);
+
+            CoapResponse response = client.advanced(request);
+            System.out.println(response.getCode());
+
+            return (response.getCode().equals(CoAP.ResponseCode.CHANGED));
+        } catch (IOException | ConnectorException e) {
+            System.out.println(e.getMessage());
             return false;
         }
     }
@@ -161,7 +197,7 @@ public class CoapAutomaticClient {
             // Setting payload with additional check
             String payload = gson.toJson(pack);
 
-            if (payload == gson.toJson(JsonNull.INSTANCE)) {
+            if (payload.equals(gson.toJson(JsonNull.INSTANCE))) {
                 Log.error("Json Encoding failed");
                 return false;
             }
@@ -171,7 +207,7 @@ public class CoapAutomaticClient {
 
             return (response != null &&
                     response.getCode().equals(CoAP.ResponseCode.CHANGED));
-        } catch (Exception e) {
+        } catch (IOException | ConnectorException e) {
             return false;
         }
     }
@@ -209,7 +245,6 @@ public class CoapAutomaticClient {
 
             if (pack.size() != 1)
                 return false;
-
             return pack.get(0).getVb();
         } catch (JsonSyntaxException | IOException | ConnectorException e) {
             return false;
@@ -242,6 +277,14 @@ public class CoapAutomaticClient {
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
+        setAlarm(client, true);
+        setSiren(client, true);
+
+        setAlarm(client, false);
+        setSiren(client, false);
+        if(true)
+            return;
+
         testWrongFingerprint(client);
 
         // Checking that the user doesn't try to turn on the system multiple times.
@@ -264,7 +307,6 @@ public class CoapAutomaticClient {
 
 
         // Test the intrusion with the system offs
-
         testIntrusions(client,4);
 
 
@@ -272,14 +314,14 @@ public class CoapAutomaticClient {
         testValidFingerprint(client, "checking fingerprint fourth time");
 
         Thread.sleep(6000);
-
         testIntrusions(client, 4);
 
+
         // Test if I can stop the intrusion with a fingerprint while the system is active
-
         Thread.sleep(6000);
-
         testValidFingerprint(client, "checking fingerprint fifth time");
+
+        // Testing actuators manually
 
     }
 

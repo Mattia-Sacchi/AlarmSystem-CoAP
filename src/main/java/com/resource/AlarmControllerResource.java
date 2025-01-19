@@ -23,9 +23,22 @@ public class AlarmControllerResource extends StandardCoapResource {
     }
 
     @Override
-    public void handlePOST(CoapExchange exchange) {
+    public void handlePUT(CoapExchange exchange) {
         try {
-            controller.setState(exchange.getRequestPayload().toString().equals("1"));
+            String payload = exchange.getRequestText();
+
+            switch (payload) {
+                case "1":
+                    controller.setState(true);
+                    break;
+                case "0":
+                    controller.setState(false);
+                    break;
+                default:
+                    exchange.respond(ResponseCode.BAD_REQUEST);
+                    return;    
+            }
+
             exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
             changed();
         } catch (Exception e) {

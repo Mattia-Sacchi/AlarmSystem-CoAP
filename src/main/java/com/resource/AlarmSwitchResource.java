@@ -23,9 +23,23 @@ public class AlarmSwitchResource extends StandardCoapResource {
     }
 
     @Override
-    public void handlePOST(CoapExchange exchange) {
+    public void handlePUT(CoapExchange exchange) {
         try {
-            alarmSwitch.setState(exchange.getRequestPayload().toString().equals("1"));
+            
+            String payload = exchange.getRequestText();
+
+            switch (payload) {
+                case "1":
+                    alarmSwitch.setState(true);
+                    break;
+                case "0":
+                    alarmSwitch.setState(false);
+                    break;
+                default:
+                    exchange.respond(ResponseCode.BAD_REQUEST);
+                    return;    
+            }
+
             exchange.respond(ResponseCode.CHANGED, new String(), MediaTypeRegistry.APPLICATION_JSON);
             changed();
         } catch (Exception e) {
