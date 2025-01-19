@@ -1,9 +1,7 @@
 package com.client;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -11,17 +9,16 @@ import java.util.stream.Stream;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.WebLink;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.server.resources.ResourceAttributes;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
-import com.utils.Constants;
 import com.utils.Log;
 import com.utils.ResourceTypes;
 import com.utils.ResourceTypesManager;

@@ -12,7 +12,7 @@ public class AlarmControllerResource extends StandardCoapResource {
     private static final String OBJECT_TITLE = "AlarmController";
     private static AlarmController controller;
 
-    public AlarmController getControllerInstance() {
+    public AlarmController getInstance() {
         return controller;
     }
 

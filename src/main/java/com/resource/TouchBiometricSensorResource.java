@@ -62,9 +62,9 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
                     ResourceTypes.RT_ALARM_CONTROLLER));
 
             // I take a alarm system Instance
-            AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
+            AlarmSwitch alarmSwitch = alarmSwitchRes.getInstance();
             // I take a alarm siren Instance
-            AlarmController alarmController = alarmControllerRes.getControllerInstance();
+            AlarmController alarmController = alarmControllerRes.getInstance();
 
             // I take the current state of the system
             boolean alarmSystemState = alarmSwitch.getState();

@@ -12,7 +12,7 @@ public class AlarmSwitchResource extends StandardCoapResource {
     private static final String OBJECT_TITLE = "AlarmSwitch";
     private static AlarmSwitch alarmSwitch;
 
-    public AlarmSwitch getAlarmSwitchInstance() {
+    public AlarmSwitch getInstance() {
         return alarmSwitch;
     }
 

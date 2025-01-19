@@ -32,6 +32,7 @@ public class InfixSensorResource extends StandardCoapResource {
     }
 
     private Optional<String> getJsonSenMlResponse() {
+        sensor.measure();
         try {
 
             SenMLPack pack = new SenMLPack();
@@ -50,18 +51,18 @@ public class InfixSensorResource extends StandardCoapResource {
     }
 
     private void valueChanged(boolean state) {
-        // I take a alarm system resource Instance
+        // I get a alarm system resource Instance
         AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
-        // I take a alarm siren resource Instance
+        // I get a alarm siren resource Instance
         AlarmControllerResource alarmControllerRes = ((AlarmControllerResource) getInstance(
                 ResourceTypes.RT_ALARM_CONTROLLER));
 
-        // I take a alarm system Instance
-        AlarmSwitch alarmSwitch = alarmSwitchRes.getAlarmSwitchInstance();
-        // I take a alarm siren Instance
-        AlarmController alarmController = alarmControllerRes.getControllerInstance();
+        // I get a alarm system Instance
+        AlarmSwitch alarmSwitch = alarmSwitchRes.getInstance();
+        // I get a alarm siren Instance
+        AlarmController alarmController = alarmControllerRes.getInstance();
 
-        // I take the current state of the system
+        // I get the current state of the systems
         boolean alarmSystemState = alarmSwitch.getState();
         boolean alarmSirenState = alarmController.getState();
 
@@ -84,9 +85,9 @@ public class InfixSensorResource extends StandardCoapResource {
                     String.format("You have %d seconds to enter the fingerprint", AlarmSwitch.ENTER_DELAY));
             ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
             Runnable task = () -> {
-                // I take a alarm system resource Instance
+
                 boolean actualSystemState = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH))
-                        .getAlarmSwitchInstance().getState();
+                        .getInstance().getState();
                 if (actualSystemState) {
                     alarmController.setState(true);
                 }
@@ -95,10 +96,10 @@ public class InfixSensorResource extends StandardCoapResource {
 
             ses.shutdown();
         }
-        return;
 
     }
 
+    /*
     // Only simulation
     @Override
     public void handlePUT(CoapExchange exchange) {
@@ -123,6 +124,8 @@ public class InfixSensorResource extends StandardCoapResource {
             exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
         }
     }
+
+    */
 
     @Override
     public void handleGET(CoapExchange exchange) {
