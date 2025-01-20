@@ -157,7 +157,6 @@ public class CoapAutomaticClient {
 
             return (response.getCode().equals(CoAP.ResponseCode.CHANGED));
         } catch (IOException | ConnectorException e) {
-            System.out.println(e.getMessage());
             return false;
         }
     }
@@ -174,7 +173,6 @@ public class CoapAutomaticClient {
 
             return (response.getCode().equals(CoAP.ResponseCode.CHANGED));
         } catch (IOException | ConnectorException e) {
-            System.out.println(e.getMessage());
             return false;
         }
     }
@@ -277,14 +275,6 @@ public class CoapAutomaticClient {
 
         Log.operationResult(validateTargetDevice(client), "Client Validation");
 
-        setAlarm(client, true);
-        setSiren(client, true);
-
-        setAlarm(client, false);
-        setSiren(client, false);
-        if(true)
-            return;
-
         testWrongFingerprint(client);
 
         // Checking that the user doesn't try to turn on the system multiple times.
@@ -322,6 +312,11 @@ public class CoapAutomaticClient {
         testValidFingerprint(client, "checking fingerprint fifth time");
 
         // Testing actuators manually
+        setAlarm(client, true);
+        setSiren(client, true);
+
+        setAlarm(client, false);
+        setSiren(client, false);
 
     }
 
