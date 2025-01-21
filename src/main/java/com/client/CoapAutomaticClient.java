@@ -153,7 +153,6 @@ public class CoapAutomaticClient {
             request.setConfirmable(true);
 
             CoapResponse response = client.advanced(request);
-            System.out.println(response.getCode());
 
             return (response.getCode().equals(CoAP.ResponseCode.CHANGED));
         } catch (IOException | ConnectorException e) {
@@ -169,7 +168,6 @@ public class CoapAutomaticClient {
             request.setConfirmable(true);
 
             CoapResponse response = client.advanced(request);
-            System.out.println(response.getCode());
 
             return (response.getCode().equals(CoAP.ResponseCode.CHANGED));
         } catch (IOException | ConnectorException e) {

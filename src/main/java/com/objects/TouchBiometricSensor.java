@@ -1,12 +1,13 @@
 package com.objects;
-import java.util.Random;
+
+import com.utils.StringGenerator;
 
 public class TouchBiometricSensor {
 
-    Random random;
+    StringGenerator fingerprintGenerator;
     
     public TouchBiometricSensor() {
-        random = new Random();
+        fingerprintGenerator = new StringGenerator();
     }
 
     public static String getValidFingerPrint() {
@@ -48,12 +49,7 @@ public class TouchBiometricSensor {
 
     // Only for simulation purpose
     public String measure() {
-
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < 10; i++){
-            sb.append(Character.toChars(random.nextInt(97, 122)));
-        }
-        return sb.toString();
+        return fingerprintGenerator.generateRandomAlphanumericString();
     }
 
 }
