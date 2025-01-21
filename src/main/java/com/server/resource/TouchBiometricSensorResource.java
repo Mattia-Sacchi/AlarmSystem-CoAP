@@ -1,4 +1,4 @@
-package com.resource;
+package com.server.resource;
 
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -10,10 +10,10 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import com.example.CoapDataManagerProcess;
-import com.objects.AlarmController;
-import com.objects.AlarmSwitch;
-import com.objects.TouchBiometricSensor;
+import com.server.manager.CoapDataManagerProcess;
+import com.server.objects.AlarmController;
+import com.server.objects.AlarmSwitch;
+import com.server.objects.TouchBiometricSensor;
 import com.utils.Log;
 import com.utils.ResourceTypes;
 import com.utils.SenMLPack;
@@ -52,7 +52,8 @@ public class TouchBiometricSensorResource extends StandardCoapResource {
 
     void scheduledTask()
     {
-        AlarmSwitch alarmSwitch = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH)).getInstance();
+        AlarmSwitchResource alarmSwitchRes = ((AlarmSwitchResource) getInstance(ResourceTypes.RT_ALARM_SWITCH));
+        AlarmSwitch alarmSwitch = alarmSwitchRes.getInstance();
         // Reset state change in order to recover state and work again
         m_stateChange = false;
         alarmSwitch.setState(true);

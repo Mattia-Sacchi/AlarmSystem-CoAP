@@ -1,11 +1,11 @@
-package com.resource;
+package com.server.resource;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import com.example.CoapDataManagerProcess;
-import com.objects.AlarmController;
+import com.server.manager.CoapDataManagerProcess;
+import com.server.objects.AlarmController;
 import com.utils.ResourceTypes;
 
 public class AlarmControllerResource extends StandardCoapResource {

@@ -1,4 +1,4 @@
-package com.objects;
+package com.server.objects;
 
 import com.utils.Log;
 

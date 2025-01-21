@@ -1,9 +1,9 @@
-package com.resource;
+package com.server.resource;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
-import com.example.CoapDataManagerProcess;
+import com.server.manager.CoapDataManagerProcess;
 import com.google.gson.Gson;
 import com.utils.CoreInterfaces;
 import com.utils.ResourceTypes;

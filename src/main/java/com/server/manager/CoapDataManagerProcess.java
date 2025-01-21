@@ -1,7 +1,7 @@
-package com.example;
+package com.server.manager;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
+
 import com.server.resource.AlarmControllerResource;
 import com.server.resource.AlarmSwitchResource;
 import com.server.resource.InfixSensorResource;

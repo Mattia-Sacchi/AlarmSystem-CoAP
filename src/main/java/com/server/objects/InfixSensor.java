@@ -1,5 +1,4 @@
-package com.objects;
-
+package com.server.objects;
 import java.util.Random;
 
 public class InfixSensor {

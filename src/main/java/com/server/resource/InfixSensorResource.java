@@ -1,5 +1,4 @@
-package com.resource;
-
+package com.server.resource;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,10 +9,10 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import com.example.CoapDataManagerProcess;
-import com.objects.AlarmController;
-import com.objects.AlarmSwitch;
-import com.objects.InfixSensor;
+import com.server.manager.CoapDataManagerProcess;
+import com.server.objects.AlarmController;
+import com.server.objects.AlarmSwitch;
+import com.server.objects.InfixSensor;
 import com.utils.Log;
 import com.utils.ResourceTypes;
 import com.utils.SenMLPack;
