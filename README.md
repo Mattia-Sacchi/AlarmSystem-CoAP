@@ -4,7 +4,7 @@
 
 Run the following command to clone the repository:
 ```
-git clone git@github.com:Mattia-Sacchi/IIOT_Project.git
+git clone git@github.com:Mattia-Sacchi/AlarmSystem-CoAP.git
 ```
 
 # 🏠 Smart Home Security System
